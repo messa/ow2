@@ -1,0 +1,29 @@
+{
+  "name": "overwatch-web",
+  "version": "2.0.0",
+  "description": "Web UI for Overwatch monitoring system",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node server",
+    "build": "next build",
+    "start": "NODE_ENV=production node server",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/messa/ow2.git"
+  },
+  "author": "Petr Messner",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/messa/ow2/issues"
+  },
+  "homepage": "https://github.com/messa/ow2#readme",
+  "dependencies": {
+    "express": "^4.16.4",
+    "next": "^8.0.3",
+    "react": "^16.8.3",
+    "react-dom": "^16.8.3",
+    "semantic-ui-react": "^0.85.0"
+  }
+}
