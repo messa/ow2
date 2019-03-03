@@ -1,0 +1,6 @@
+aiohttp
+cchardet
+aiodns
+pyyaml
+motor
+simplejson
