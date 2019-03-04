@@ -1,0 +1,3 @@
+overwatch_system_agent:
+  report_url: http://localhost:8000/report
+  report_token: topsecret
