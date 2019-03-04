@@ -9,7 +9,7 @@ from socket import getfqdn
 from time import monotonic as monotime
 from time import time, sleep
 
-from .helpers import BaseConfiguration, setup_logging, setup_log_file
+from .helpers import setup_logging, setup_log_file
 
 
 logger = logging.getLogger(__name__)
@@ -27,27 +27,28 @@ def system_agent_main():
     args = p.parse_args()
     try:
         setup_logging(verbosity=args.verbose)
-        conf = Configuration(args.conf_file)
-        setup_log_file(conf.log.file_path)
+        #conf = Configuration(args.conf_file)
+        #setup_log_file(conf.log.file_path)
         logger.debug('System agent starting')
-        run_system_agent(conf)
+        run_system_agent()
     except BaseException as e:
         logger.exception('System agent failed: %r', e)
         raise e
 
 
-class Configuration (BaseConfiguration):
+# class Configuration (BaseConfiguration):
+#
+#     top_level_key = 'overwatch_system_agent'
+#
+#     def _load(self, data, base_path):
+#         super()._load(data, base_path)
 
-    top_level_key = 'overwatch_system_agent'
 
-    def _load(self, data, base_path):
-        super()._load(data, base_path)
-
-
-def run_system_agent(conf):
-    sleep_interval = conf.sleep_interval or default_sleep_interval
+def run_system_agent():
+    #sleep_interval = conf.sleep_interval or default_sleep_interval
+    sleep_interval = 15
     while True:
-        run_system_agent_iteration(conf, sleep_interval)
+        run_system_agent_iteration(None, sleep_interval)
         sleep(sleep_interval)
 
 
