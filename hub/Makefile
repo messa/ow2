@@ -18,3 +18,6 @@ $(venv_dir)/packages-installed: requirements.txt requirements-tests.txt
 	$(venv_dir)/bin/pip install -r requirements-tests.txt
 	$(venv_dir)/bin/pip install -e .
 	touch $@
+
+docker_build:
+	docker build -t ow2-hub .
