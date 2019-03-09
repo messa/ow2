@@ -54,7 +54,7 @@ async def async_main(conf):
     app = get_app()
     app['db'] = mongo_db
     from aiohttp.web import _run_app
-    await _run_app(app)
+    await _run_app(app, port=conf.port)
 
 
 def get_app():
