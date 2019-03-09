@@ -45,8 +45,19 @@ def setup_logging():
     # TODO: datetime UTC + non-locale formatting
 
 
+mongo_client_options = dict(
+    maxIdleTimeMS=60 * 1000,
+    socketTimeoutMS=15 * 1000,
+    connectTimeoutMS=5 * 1000,
+    serverSelectionTimeoutMS=15 * 1000,
+    waitQueueTimeoutMS=10 * 1000,
+    appname='ow2-hub',
+    retryWrites=True,
+)
+
+
 async def async_main(conf):
-    mongo_client = AsyncIOMotorClient(conf.mongodb.uri)
+    mongo_client = AsyncIOMotorClient(conf.mongodb.uri, **mongo_client_options)
     mongo_db_name = get_mongo_db_name(conf.mongodb.uri)
     mongo_db = mongo_client[mongo_db_name]
     logger.debug('db: %s', mongo_db)

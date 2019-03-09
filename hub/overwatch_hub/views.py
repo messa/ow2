@@ -1,4 +1,6 @@
 from aiohttp.web import RouteTableDef, Response
+from asyncio import shield, create_task
+from bson import ObjectId
 from logging import getLogger
 
 
@@ -15,7 +17,17 @@ async def root_index(request):
 @routes.post('/report')
 async def post_report(request):
     data_text = await request.text()
-    db = request.app['db']
-    res = await db['rawReports'].insert_one({'data': data_text})
-    logger.info('Inserted into rawReports: %s', res.inserted_id)
+    await shield(create_task(save_report(request, data_text)))
     return Response(text='{"ok": true}', content_type='application/json')
+
+
+async def save_report(request, data_text):
+    try:
+        db = request.app['db']
+        del request
+        doc = {'_id': ObjectId(), 'data': data_text}
+        res = await db['rawReports'].insert_one(doc)
+        logger.info('Inserted into rawReports: %s', res.inserted_id)
+    except Exception as e:
+        logger.exception('Failed to process report: %r', e)
+        raise e
