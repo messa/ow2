@@ -9,6 +9,7 @@ from socket import getfqdn
 from time import monotonic as monotime
 from time import time, sleep
 
+from .configuration import Configuration
 from .helpers import setup_logging, setup_log_file
 
 
@@ -23,17 +24,18 @@ rs = requests.session()
 def system_agent_main():
     p = argparse.ArgumentParser()
     p.add_argument('--verbose', '-v', action='count')
-    p.add_argument('conf_file')
+    p.add_argument('--conf')
     args = p.parse_args()
+    conf = Configuration(args.conf)
     try:
         setup_logging(verbosity=args.verbose)
         #conf = Configuration(args.conf_file)
         #setup_log_file(conf.log.file_path)
         logger.debug('System agent starting')
-        run_system_agent()
+        run_system_agent(conf)
     except BaseException as e:
         logger.exception('System agent failed: %r', e)
-        raise e
+        sys.exit('ERROR: {!r}'.format(e))
 
 
 # class Configuration (BaseConfiguration):
@@ -44,11 +46,11 @@ def system_agent_main():
 #         super()._load(data, base_path)
 
 
-def run_system_agent():
+def run_system_agent(conf):
     #sleep_interval = conf.sleep_interval or default_sleep_interval
     sleep_interval = 15
     while True:
-        run_system_agent_iteration(None, sleep_interval)
+        run_system_agent_iteration(conf, sleep_interval)
         sleep(sleep_interval)
 
 
@@ -64,7 +66,8 @@ def run_system_agent_iteration(conf, sleep_interval):
     report_state['duration'] = duration
 
     # add watchdog
-    wd_interval = conf.watchdog_interval or sleep_interval + 30
+    #wd_interval = conf.watchdog_interval or sleep_interval + 30
+    wd_interval = sleep_interval + 30
     report_state['watchdog'] = {
         '__watchdog': {
             'deadline': int((time() + wd_interval) * 1000),
