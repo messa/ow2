@@ -8,6 +8,7 @@ class Configuration:
         cfg_path = Path(cfg_path).resolve()
         cfg_dir = cfg_path.parent
         cfg = yaml_load(cfg_path.read_text())['overwatch_hub']
+        self.port = int(cfg.get('port') or 8485)
         self.mongodb = MongoDB(cfg['mongodb'])
 
 

@@ -7,6 +7,6 @@ COPY . /src/
 RUN pip install /src && overwatch-hub --version
 # ^^^ Run with --version just to check that it can be executed
 
-EXPOSE 8080
+EXPOSE 8485
 
 CMD ["overwatch-hub", "--conf", "/conf/overwatch_hub.yaml"]
