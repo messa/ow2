@@ -16,6 +16,8 @@ logger = getLogger(__name__)
 
 def hub_main():
     p = ArgumentParser()
+    p.add_argument('--version', action='version', version='2.0.0')
+    # TODO: put the version in a single location (it's also in setup.py)
     p.add_argument('--conf', '-f', help='path to configuration file')
     args = p.parse_args()
     cfg_path = args.conf or environ.get('CONF_PATH')
