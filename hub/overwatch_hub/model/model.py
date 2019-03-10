@@ -1,8 +1,9 @@
 from bson import ObjectId
 from logging import getLogger
-from simplejson import dumps as json_dumps
 
-from ..util import get_mongo_db_name, smart_repr
+from ..util import get_mongo_db_name, smart_repr, parse_datetime, to_compact_json
+from .stream_labels import StreamLabels
+from .stream_snapshots import StreamSnapshots
 
 
 logger = getLogger(__name__)
@@ -31,21 +32,38 @@ def get_mongo_db(mongo_conf):
 class Model:
 
     def __init__(self, conf):
-        self.db = get_mongo_db(conf.mongodb)
+        self.db = db = get_mongo_db(conf.mongodb)
+        self.stream_labels = StreamLabels(db)
+        self.stream_snapshots = StreamSnapshots(db)
 
     async def __aenter__(self):
+        await self.create_mandatory_indexes()
+        await self.create_optional_indexes()
         return self
 
     async def __aexit__(self, exc_type, exc, tb):
         self.db.client.close()
         self.db = None
 
+    async def create_mandatory_indexes(self):
+        await self.stream_labels.create_mandatory_indexes()
+
+    async def create_optional_indexes(self):
+        await self.stream_snapshots.create_optional_indexes()
+
     async def save_report(self, report_data):
         logger.debug('save_report report_data: %s', smart_repr(report_data))
         doc = {'_id': ObjectId(), 'data': to_compact_json(report_data)}
-        res = await self.db['rawReports'].insert_one(doc)
-        logger.info('Inserted into rawReports: %s', res.inserted_id)
-
-
-def to_compact_json(obj):
-    return json_dumps(obj, separators=(',', ':'))
+        await self.db['rawReports'].insert_one(doc)
+        logger.info('Inserted rawReports %s', doc['_id'])
+        report_date = parse_datetime(report_data['date'])
+        report_label = report_data['label']
+        report_state = report_data['state']
+        unknown_keys = sorted(report_data.keys() - {'date', 'label', 'state'})
+        if unknown_keys:
+            logger.info('Unknown keys in report data: %s', ', '.join(unknown_keys))
+        label_id = await self.stream_labels.resolve_label_id(report_label)
+        await self.stream_snapshots.insert(
+            date=report_date,
+            stream_label_id=label_id,
+            state=report_state)
