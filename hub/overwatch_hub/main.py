@@ -1,6 +1,8 @@
 from aiohttp import web
+from aiohttp_graphql import GraphQLView
 from argparse import ArgumentParser
 import asyncio
+from graphql.execution.executors.asyncio import AsyncioExecutor as GQLAIOExecutor
 from logging import getLogger
 from os import environ
 import sys
@@ -8,6 +10,7 @@ import sys
 from .configuration import Configuration
 from .views import routes
 from .model import Model
+from .graphql import Schema
 
 
 logger = getLogger(__name__)
@@ -45,14 +48,17 @@ def setup_logging():
 
 
 async def async_main(conf):
+
     async with Model(conf) as model:
-        app = get_app()
+        app = web.Application()
+        app.router.add_routes(routes)
+        GraphQLView.attach(
+                app,
+                route_path='/graphql',
+                schema=Schema,
+                graphiql=True,
+                enable_async=True,
+                executor=GQLAIOExecutor())
         app['model'] = model
         from aiohttp.web import _run_app
         await _run_app(app, port=conf.port)
-
-
-def get_app():
-    app = web.Application()
-    app.router.add_routes(routes)
-    return app

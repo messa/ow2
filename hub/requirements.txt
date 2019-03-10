@@ -1,4 +1,7 @@
 aiohttp==3.5.4
+aiohttp-graphql==1.0.0
+graphql-core==2.1
+graphql-server-core==1.1.1
 cchardet
 aiodns
 pyyaml==3.13
