@@ -16,16 +16,16 @@ class StreamSnapshots:
 
     async def create_optional_indexes(self):
         await self._c_snapshots.create_index([
-            ('label_id', ASC),
+            ('stream_id', ASC),
             ('date', ASC),
         ])
 
-    async def insert(self, date, stream_label_id, state):
+    async def insert(self, date, stream_id, state):
         assert isinstance(date, datetime)
         assert isinstance(state, dict)
         doc = {
             '_id': ObjectId(),
-            'label_id': stream_label_id,
+            'stream_id': stream_id,
             'date': date,
             'state_json': to_compact_json(state),
         }

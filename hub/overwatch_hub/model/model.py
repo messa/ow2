@@ -2,7 +2,7 @@ from bson import ObjectId
 from logging import getLogger
 
 from ..util import get_mongo_db_name, smart_repr, parse_datetime, to_compact_json
-from .stream_labels import StreamLabels
+from .streams import Streams
 from .stream_snapshots import StreamSnapshots
 
 
@@ -33,7 +33,7 @@ class Model:
 
     def __init__(self, conf):
         self.db = db = get_mongo_db(conf.mongodb)
-        self.stream_labels = StreamLabels(db)
+        self.streams = Streams(db)
         self.stream_snapshots = StreamSnapshots(db)
 
     async def __aenter__(self):
@@ -46,7 +46,7 @@ class Model:
         self.db = None
 
     async def create_mandatory_indexes(self):
-        await self.stream_labels.create_mandatory_indexes()
+        await self.streams.create_mandatory_indexes()
 
     async def create_optional_indexes(self):
         await self.stream_snapshots.create_optional_indexes()
@@ -62,8 +62,8 @@ class Model:
         unknown_keys = sorted(report_data.keys() - {'date', 'label', 'state'})
         if unknown_keys:
             logger.info('Unknown keys in report data: %s', ', '.join(unknown_keys))
-        label_id = await self.stream_labels.resolve_label_id(report_label)
+        stream_id = await self.streams.resolve_id_by_label(report_label)
         await self.stream_snapshots.insert(
             date=report_date,
-            stream_label_id=label_id,
+            stream_id=stream_id,
             state=report_state)
