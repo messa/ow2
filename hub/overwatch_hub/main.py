@@ -2,13 +2,12 @@ from aiohttp import web
 from argparse import ArgumentParser
 import asyncio
 from logging import getLogger
-from motor.motor_asyncio import AsyncIOMotorClient
 from os import environ
 import sys
 
 from .configuration import Configuration
-from .util import get_mongo_db_name
 from .views import routes
+from .model import Model
 
 
 logger = getLogger(__name__)
@@ -45,27 +44,12 @@ def setup_logging():
     # TODO: datetime UTC + non-locale formatting
 
 
-mongo_client_options = dict(
-    maxIdleTimeMS=60 * 1000,
-    socketTimeoutMS=15 * 1000,
-    connectTimeoutMS=5 * 1000,
-    serverSelectionTimeoutMS=15 * 1000,
-    waitQueueTimeoutMS=10 * 1000,
-    appname='ow2-hub',
-    retryWrites=True,
-)
-
-
 async def async_main(conf):
-    mongo_client = AsyncIOMotorClient(conf.mongodb.uri, **mongo_client_options)
-    mongo_db_name = get_mongo_db_name(conf.mongodb.uri)
-    mongo_db = mongo_client[mongo_db_name]
-    logger.debug('db: %s', mongo_db)
-
-    app = get_app()
-    app['db'] = mongo_db
-    from aiohttp.web import _run_app
-    await _run_app(app, port=conf.port)
+    async with Model(conf) as model:
+        app = get_app()
+        app['model'] = model
+        from aiohttp.web import _run_app
+        await _run_app(app, port=conf.port)
 
 
 def get_app():
