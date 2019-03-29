@@ -4,9 +4,9 @@
   "description": "Web UI for Overwatch monitoring system",
   "main": "index.js",
   "scripts": {
-    "dev": "node server",
-    "build": "next build",
-    "start": "NODE_ENV=production node server",
+    "dev": "node -r @babel/register server",
+    "build": "next build && babel server --out-dir server.dist",
+    "start": "exec env NODE_ENV=production node server.dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -24,5 +24,11 @@
     "next": "^8.0.3",
     "react": "^16.8.6",
     "react-dom": "^16.8.6"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.4.0",
+    "@babel/preset-env": "^7.4.2",
+    "@babel/register": "^7.4.0"
   }
 }
