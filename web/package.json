@@ -21,7 +21,7 @@
   "homepage": "https://github.com/messa/ow2#readme",
   "dependencies": {
     "express": "^4.16.4",
-    "next": "^8.0.3",
+    "next": "^8.0.4",
     "react": "^16.8.6",
     "react-dom": "^16.8.6"
   },
