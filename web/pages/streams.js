@@ -7,9 +7,11 @@ import withData from '../lib/withData'
 class StreamsPage extends React.Component {
 
   render() {
+    const { streams } = this.props
     return (
       <Layout activeItem='streams'>
         <Container>
+          <pre>{JSON.stringify({ streams }, null, 2)}</pre>
         </Container>
       </Layout>
     )
@@ -24,6 +26,10 @@ export default withData(StreamsPage, {
         edges {
           node {
             streamId
+            labelJSON
+            lastSnapshot {
+              snapshotId
+            }
           }
         }
       }
