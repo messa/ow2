@@ -10,7 +10,7 @@ import sys
 from .configuration import Configuration
 from .views import routes
 from .model import Model
-from .graphql import Schema
+from .graphql import graphql_schema
 
 
 logger = getLogger(__name__)
@@ -51,14 +51,15 @@ async def async_main(conf):
 
     async with Model(conf) as model:
         app = web.Application()
+        app['model'] = model
         app.router.add_routes(routes)
         GraphQLView.attach(
                 app,
                 route_path='/graphql',
-                schema=Schema,
+                schema=graphql_schema,
                 graphiql=True,
                 enable_async=True,
                 executor=GQLAIOExecutor())
-        app['model'] = model
         from aiohttp.web import _run_app
+        # ^^^ https://github.com/aio-libs/aiohttp/blob/baddbfe182a5731d5963438f317cbcce4c094f39/aiohttp/web.py#L261
         await _run_app(app, port=conf.port)

@@ -1,1 +1,1 @@
-from .schema import Schema
+from .schema import graphql_schema

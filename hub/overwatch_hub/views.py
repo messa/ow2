@@ -15,8 +15,9 @@ async def root_index(request):
 
 @routes.post('/report')
 async def post_report(request):
+    model = request.app['model']
     data = await request.json()
-    await shield(create_task(_just_log_exceptions(request.app['model'].save_report(data))))
+    await shield(create_task(_just_log_exceptions(model.save_report(data))))
     return Response(text='{"ok": true}', content_type='application/json')
 
 

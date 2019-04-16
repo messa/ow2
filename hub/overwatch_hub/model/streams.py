@@ -16,8 +16,17 @@ class Streams:
         await self._c_labels.create_index('label_str', unique=True)
 
     async def resolve_id_by_label(self, label):
+        stream = await self.resolve_by_label(label)
+        return stream.id
+
+    async def resolve_by_label(self, label):
         assert isinstance(label, dict)
         label_str = get_label_str(label)
+        try_count = 0
+        while True:
+            if try_count > 3:
+                raise Exception(f'Too many tries: resolve_by_label({label!r})')
+            try_count += 1
         doc = await self._c_labels.find_one({'label_str': label_str})
         if doc:
             return doc['_id']
@@ -29,7 +38,22 @@ class Streams:
         }
         await self._c_labels.insert_one(doc)
         logger.debug('Inserted new stream id: %r label: %r', doc['_id'], doc['label'])
-        return doc['_id']
+        return self._obj(doc)
+
+    def _obj(self, doc):
+        return Stream(doc)
+
+    async def list_all(self):
+        docs = await self._c_labels.find({}).to_list(10**4)
+        return [self._obj(d) for d in docs]
+
+
+class Stream:
+
+    def __init__(self, doc):
+        self.id = doc['_id']
+        self.label = doc['label']
+        self.created_date = doc['created']['date']
 
 
 def get_label_str(label):
@@ -46,3 +70,5 @@ def get_label_str(label):
 
 
 assert get_label_str({'a': '1', 'b': '2'}) == 'a:1,b:2'
+assert get_label_str({'b': '2', 'a': '1'}) == 'a:1,b:2'
+assert get_label_str({'key,:': 'value,:'}) == 'key,:::value,,:'

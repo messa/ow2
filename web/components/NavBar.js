@@ -25,7 +25,7 @@ export default ({ activeItem }) => {
           align-items: center;
           padding: 0 1em;
         }
-        nav :global(a) {
+        nav :global(a), nav :global(a.active:hover) {
           color: #fff;
           text-decoration: none;
         }
