@@ -28,6 +28,7 @@ type PageInfo {
 type Query {
   """The ID of the object"""
   node(id: ID!): Node
+  stream(streamId: String!): Stream
   streams(before: String, after: String, first: Int, last: Int): StreamConnection
 }
 

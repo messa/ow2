@@ -131,7 +131,13 @@ class Query (ObjectType):
 
     node = Node.Field()
 
+    stream = Field(Stream, stream_id=String(required=True))
     streams = ConnectionField(StreamConnection)
+
+    async def resolve_stream(root, info, stream_id):
+        model = get_model(info)
+        stream = await model.streams.get_by_id(stream_id)
+        return stream
 
     async def resolve_streams(root, info):
         model = get_model(info)

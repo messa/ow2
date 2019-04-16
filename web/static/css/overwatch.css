@@ -23,3 +23,16 @@ code {
   border-radius: 0px;
   font-size: inherit;
 }
+
+a {
+  color: hsl(340, 100%, 40%);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+  color: hsl(340, 100%, 25%);
+}
+
+.text-right {
+  text-align: right;
+}
