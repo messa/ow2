@@ -1,6 +1,8 @@
+import React from 'react'
 import Head from 'next/head'
+import NavBar from './NavBar'
 
-export default ({ children }) => (
+export default ({ children, activeItem }) => (
   <div className='Layout'>
     <Head>
       <title>Overwatch monitoring</title>
@@ -10,6 +12,7 @@ export default ({ children }) => (
       <link rel='stylesheet' type='text/css' href='/static/css/skeleton.css' />
       <link rel='stylesheet' type='text/css' href='/static/css/overwatch.css' />
     </Head>
+    <NavBar activeItem={activeItem} />
     <br />
     {children}
   </div>
