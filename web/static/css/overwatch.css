@@ -1,5 +1,25 @@
+body {
+  font-size: 13px;
+}
+
 h1 {
   font-size: 2.0rem;
   font-weight: 700;
   letter-spacing: .2rem;
+}
+
+pre, code {
+  font-family: Inconsolata, monospace;
+}
+
+pre {
+  font-size: 10px;
+}
+
+code {
+  background: none;
+  border: none;
+  margin: 0px;
+  border-radius: 0px;
+  font-size: inherit;
 }
