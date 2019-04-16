@@ -6,7 +6,8 @@ let relayEnvironment = null
 // Define a function that fetches the results of an operation (query/mutation/etc)
 // and returns its results as a Promise:
 function fetchQuery (operation, variables, cacheConfig, uploadables) {
-  return fetch(process.env.RELAY_ENDPOINT, {
+  const gqlEndpoint = process.browser ? '/graphql' : 'http://127.0.0.1:3000/graphql'
+  return fetch(gqlEndpoint, {
     method: 'POST',
     headers: {
       Accept: 'application/json',
