@@ -1,0 +1,64 @@
+"""
+The `DateTime` scalar type represents a DateTime
+value as specified by
+[iso8601](https://en.wikipedia.org/wiki/ISO_8601).
+"""
+scalar DateTime
+
+"""An object with an ID"""
+interface Node {
+  """The ID of the object."""
+  id: ID!
+}
+
+type PageInfo {
+  """When paginating forwards, are there more items?"""
+  hasNextPage: Boolean!
+
+  """When paginating backwards, are there more items?"""
+  hasPreviousPage: Boolean!
+
+  """When paginating backwards, the cursor to continue."""
+  startCursor: String
+
+  """When paginating forwards, the cursor to continue."""
+  endCursor: String
+}
+
+type Query {
+  """The ID of the object"""
+  node(id: ID!): Node
+  streams(before: String, after: String, first: Int, last: Int): StreamConnection
+}
+
+type Stream implements Node {
+  """The ID of the object."""
+  id: ID!
+  labelJSON: String
+  streamId: String
+  lastSnapshot: StreamSnapshot
+}
+
+type StreamConnection {
+  pageInfo: PageInfo!
+  edges: [StreamEdge]!
+}
+
+type StreamEdge {
+  """The item at the end of the edge"""
+  node: Stream
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+type StreamSnapshot implements Node {
+  """The ID of the object."""
+  id: ID!
+  snapshotId: String
+  streamId: String
+  date: DateTime
+  stateJSON: String
+  stream: Stream
+}
+
