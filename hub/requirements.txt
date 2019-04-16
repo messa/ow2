@@ -9,3 +9,4 @@ pymongo==3.7.2
 motor==2.0.0
 simplejson
 pytz
+graphene>=2.0
