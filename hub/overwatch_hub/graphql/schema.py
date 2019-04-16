@@ -1,5 +1,5 @@
 import asyncio
-from graphene import ObjectType, Int, String, Schema
+from graphene import ObjectType, Field, Int, String, Schema, DateTime
 from graphene.relay import Node, Connection, ConnectionField
 from graphene.types.json import JSONString
 from logging import getLogger
@@ -71,6 +71,31 @@ class PackConnection (Connection):
 '''
 
 
+class StreamSnapshot (ObjectType):
+
+    class Meta:
+        interfaces = (Node, )
+
+    @classmethod
+    def get_node(cls, info, id):
+        raise Exception('NIY')
+
+    snapshot_id = String(name='snapshotId')
+    stream_id = String(name='streamId')
+    date = DateTime()
+    state_json = String(name='stateJSON')
+
+    stream = Field(lambda: Stream)
+
+    def resolve_snapshot_id(snapshot, info):
+        return snapshot.id
+
+    async def resolve_stream(snapshot, info):
+        model = get_model(info)
+        stream = await model.streams.get_by_id(snapshot.stream_id)
+        return stream
+
+
 class Stream (ObjectType):
 
     class Meta:
@@ -82,12 +107,18 @@ class Stream (ObjectType):
 
     label_json = String(name='labelJSON')
     stream_id = String(name='streamId')
+    last_snapshot = Field(StreamSnapshot, name='lastSnapshot')
 
     def resolve_stream_id(stream, info):
         return stream.id
 
     def resolve_label_json(stream, info):
         return json_dumps(stream.label)
+
+    async def resolve_last_snapshot(stream, info):
+        model = get_model(info)
+        snapshot = await model.stream_snapshots.get_latest(stream_id=stream.id)
+        return snapshot
 
 
 class StreamConnection (Connection):
@@ -102,10 +133,14 @@ class Query (ObjectType):
 
     streams = ConnectionField(StreamConnection)
 
-    async def resolve_streams(self, info):
-        model = info.context['request'].app['model']
+    async def resolve_streams(root, info):
+        model = get_model(info)
         streams = await model.streams.list_all()
         return streams
+
+
+def get_model(info):
+    return info.context['request'].app['model']
 
 
 graphql_schema = Schema(query=Query)
