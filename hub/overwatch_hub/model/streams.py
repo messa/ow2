@@ -43,6 +43,11 @@ class Streams:
     def _obj(self, doc):
         return Stream(doc)
 
+    async def get_by_id(self, stream_id):
+        assert isinstance(stream_id, str)
+        doc = await self._c_labels.find_one({'_id': stream_id})
+        return self._obj(doc)
+
     async def list_all(self):
         docs = await self._c_labels.find({}).to_list(10**4)
         return [self._obj(d) for d in docs]
