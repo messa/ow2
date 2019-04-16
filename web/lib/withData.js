@@ -2,9 +2,9 @@ import React from 'react'
 import initEnvironment from './createRelayEnvironment'
 import { fetchQuery, ReactRelayContext } from 'react-relay'
 
-export default (ComposedComponent, options = {}) => {
+export default function withData(ComposedComponent, options = {}) {
   return class WithData extends React.Component {
-    static displayName = `WithData(${ComposedComponent.displayName})`
+    static displayName = `withData(${ComposedComponent.displayName})`
 
     static async getInitialProps (ctx) {
       // Evaluate the composed component's getInitialProps()
@@ -18,9 +18,12 @@ export default (ComposedComponent, options = {}) => {
       const environment = initEnvironment()
 
       if (options.query) {
-        // Provide the `url` prop data in case a graphql query uses it
-        // const url = { query: ctx.query, pathname: ctx.pathname }
-        const variables = {}
+        let variables = {}
+        if (options.variables) {
+          variables = options.variables(ctx)
+        } else if (composedInitialProps.relayVariables) {
+          variables = composedInitialProps.relayVariables
+        }
         // TODO: Consider RelayQueryResponseCache
         // https://github.com/facebook/relay/issues/1687#issuecomment-302931855
         queryProps = await fetchQuery(environment, options.query, variables)

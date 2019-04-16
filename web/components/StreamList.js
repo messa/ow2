@@ -1,5 +1,6 @@
 import React from 'react'
 import { createFragmentContainer, graphql } from 'react-relay'
+import Link from 'next/link'
 import LabelFromJSON from './LabelFromJSON'
 import DateTime from './util/DateTime'
 
@@ -20,7 +21,11 @@ class StreamList extends React.Component {
           <tbody>
             {streamNodes.map(stream => (
               <tr key={stream.streamId}>
-                <td><code>{stream.streamId}</code></td>
+                <td>
+                  <Link href={{ pathname: '/stream', query: { id: stream.streamId } }}><a>
+                    <code>{stream.streamId}</code>
+                  </a></Link>
+                </td>
                 <td><LabelFromJSON labelJSON={stream.labelJSON} /></td>
                 <td><DateTime value={stream.lastSnapshot.date} /></td>
               </tr>
