@@ -27,18 +27,22 @@ class Streams:
             if try_count > 3:
                 raise Exception(f'Too many tries: resolve_by_label({label!r})')
             try_count += 1
-        doc = await self._c_labels.find_one({'label_str': label_str})
-        if doc:
-            return doc['_id']
-        doc = {
-            '_id': random_str(8),
-            'label_str': label_str,
-            'label': label,
-            'created': {'date': datetime.utcnow()},
-        }
-        await self._c_labels.insert_one(doc)
-        logger.debug('Inserted new stream id: %r label: %r', doc['_id'], doc['label'])
-        return self._obj(doc)
+            doc = await self._c_labels.find_one({'label_str': label_str})
+            if doc:
+                return self._obj(doc)
+            doc = {
+                '_id': random_str(8),
+                'label_str': label_str,
+                'label': label,
+                'created': {'date': datetime.utcnow()},
+            }
+            try:
+                await self._c_labels.insert_one(doc)
+            except Exception as e:
+                logger.debug('Failed to insert %s %r: %r; trying again', self._c_labels.name, doc, e)
+                continue
+            logger.debug('Inserted new stream id: %r label: %r', doc['_id'], doc['label'])
+            return self._obj(doc)
 
     def _obj(self, doc):
         return Stream(doc)
