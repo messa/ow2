@@ -31,7 +31,7 @@ def random_str(length):
         x = x[:length]
         if not x.isalnum():
             continue
-        return x
+        return x.lower()
 
 
 def to_compact_json(obj):
