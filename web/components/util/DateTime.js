@@ -8,11 +8,15 @@ export default class DateTime extends React.Component {
 
   componentDidMount() {
     this.updateAgo()
-    this.intervalId = setInterval(this.updateAgo, 3 * 1000)
+    if (this.props.updateAgo) {
+      this.updateAgoIntervalId = setInterval(this.updateAgo, 3 * 1000)
+    }
   }
 
   componentWillUnmount() {
-    clearInterval(this.intervalId)
+    if (this.updateAgoIntervalId) {
+      clearInterval(this.updateAgoIntervalId)
+    }
   }
 
   updateAgo = () => {
@@ -34,8 +38,6 @@ export default class DateTime extends React.Component {
       const hours = Math.floor((totalSeconds % 86400) / 3600)
       this.setState({ ago: `${days} d ${hours} h` })
     }
-
-
   }
 
   render() {
