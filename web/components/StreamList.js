@@ -1,7 +1,7 @@
 import React from 'react'
 import { createFragmentContainer, graphql } from 'react-relay'
 import Link from 'next/link'
-import LabelFromJSON from './LabelFromJSON'
+import LabelFromJSON from './util/LabelFromJSON'
 import DateTime from './util/DateTime'
 
 class StreamList extends React.Component {

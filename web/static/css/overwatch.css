@@ -11,11 +11,9 @@ h1 {
 pre, code {
   font-family: Inconsolata, monospace;
 }
-
 pre.debug {
   font-size: 10px;
 }
-
 code {
   background: none;
   border: none;
@@ -40,4 +38,37 @@ a:hover {
 
 .text-right {
   text-align: right;
+}
+
+/* LabelPill */
+
+.LabelPill {
+  margin-left: 1em;
+  display: inline-flex;
+  align-items: stretch;
+}
+a.LabelPill {
+  text-decoration: none;
+  color: #000;
+}
+.LabelPill:first-child {
+  margin-left: 0;
+}
+.LabelPill b {
+  margin: 0;
+  padding: 1px 4px 1px 6px;
+  font-weight: 600;
+  font-size: 10px;
+  line-height: 17px;
+  color: hsl(0, 0%, 50%);
+  background-color: hsl(0, 0%, 90%);
+  border-radius: 7px 0 0 7px;
+}
+.LabelPill code {
+  font-size: 11px;
+  line-height: 17px;
+  margin: 0;
+  padding: 1px 6px 1px 4px;
+  background-color: hsl(0, 0%, 96%);
+  border-radius: 0 7px 7px 0;
 }
