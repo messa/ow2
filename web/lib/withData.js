@@ -15,7 +15,8 @@ export default function withData(ComposedComponent, options = {}) {
 
       let queryProps = {}
       let queryRecords = {}
-      const environment = initEnvironment()
+      const { req } = ctx
+      const environment = initEnvironment({ req })
 
       if (options.query) {
         let variables = {}

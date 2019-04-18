@@ -1,9 +1,10 @@
 import express from 'express'
 import next from 'next'
 import bodyParser from 'body-parser'
-import { gqlGetProxy, gqlPostProxy } from './gqlProxy'
+import setupProxies from './proxies'
+import configuration from './configuration'
 
-const port = parseInt(process.env.PORT, 10) || 3000
+const port = configuration.get('port') || 3000
 const dev = process.env.NODE_ENV !== 'production'
 const app = next({ dev })
 const handle = app.getRequestHandler()
@@ -13,10 +14,12 @@ app.prepare().then(() => {
 
   server.use(bodyParser.json())
 
-  const hubGraphQLEndpoint = 'http://127.0.0.1:8485/graphql'
+  setupProxies(server)
 
-  server.get('/graphql', gqlGetProxy(hubGraphQLEndpoint))
-  server.post('/graphql', gqlPostProxy(hubGraphQLEndpoint))
+  server.use((req, res, next) => {
+    req.configuration = configuration
+    next()
+  })
 
   server.get('*', handle)
 
