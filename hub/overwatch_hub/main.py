@@ -2,6 +2,7 @@ from aiohttp import web
 from aiohttp_graphql import GraphQLView
 from argparse import ArgumentParser
 import asyncio
+from contextlib import AsyncExitStack
 from graphql.execution.executors.asyncio import AsyncioExecutor as GQLAIOExecutor
 from logging import getLogger
 from os import environ
@@ -48,8 +49,8 @@ def setup_logging():
 
 
 async def async_main(conf):
-
-    async with Model(conf) as model:
+    async with AsyncExitStack() as stack:
+        model = await stack.enter_async_context(Model(conf))
         app = web.Application()
         app['model'] = model
         app.router.add_routes(routes)
@@ -62,4 +63,5 @@ async def async_main(conf):
                 executor=GQLAIOExecutor())
         from aiohttp.web import _run_app
         # ^^^ https://github.com/aio-libs/aiohttp/blob/baddbfe182a5731d5963438f317cbcce4c094f39/aiohttp/web.py#L261
+        logger.debug('Listening on http://localhost:%s', conf.port)
         await _run_app(app, port=conf.port)
