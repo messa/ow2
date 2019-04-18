@@ -1,0 +1,11 @@
+overwatch_hub:
+  url: http://172.17.0.1:8485
+  client_token: "hubclienttopsecret"
+port: 8486
+#log:
+#  file: ow2-web.log
+session_secret: "sessiontopsecret"
+mongodb:
+  uri: mongodb://127.0.0.1:27017/ow2_web
+  #ssl:
+  #  ca_cert_file: mongodb.cert
