@@ -12,11 +12,6 @@ pre, code {
   font-family: Inconsolata, monospace;
 }
 
-td {
-  padding-top: 2px;
-  padding-bottom: 2px;
-}
-
 pre.debug {
   font-size: 10px;
 }
@@ -27,6 +22,11 @@ code {
   margin: 0px;
   border-radius: 0px;
   font-size: inherit;
+}
+
+td {
+  padding-top: 2px;
+  padding-bottom: 2px;
 }
 
 a {
