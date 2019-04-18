@@ -12,7 +12,7 @@ pre, code {
   font-family: Inconsolata, monospace;
 }
 
-pre {
+pre.debug {
   font-size: 10px;
 }
 
