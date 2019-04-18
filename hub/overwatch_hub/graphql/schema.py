@@ -113,7 +113,7 @@ class Stream (ObjectType):
         return stream.id
 
     def resolve_label_json(stream, info):
-        return json_dumps(stream.label)
+        return json_dumps(stream.label, sort_keys=True)
 
     async def resolve_last_snapshot(stream, info):
         model = get_model(info)

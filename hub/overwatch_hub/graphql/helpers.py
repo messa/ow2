@@ -7,8 +7,8 @@ class Obj:
         self.__dict__.update(kwargs)
 
 
-def json_dumps(v):
-    return _json_dumps(v, separators=(',', ':'))
+def json_dumps(v, sort_keys=False):
+    return _json_dumps(v, separators=(',', ':'), sort_keys=sort_keys)
 
 
 assert json_dumps({'foo': 'bar'}) == '{"foo":"bar"}'
