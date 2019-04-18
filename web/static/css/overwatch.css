@@ -22,7 +22,7 @@ code {
   font-size: inherit;
 }
 
-td {
+td, th {
   padding-top: 2px;
   padding-bottom: 2px;
 }
