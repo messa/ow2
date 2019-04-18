@@ -17,6 +17,7 @@ setup(
     install_requires=[
         'psutil',
         'requests',
+        'pyyaml',
     ],
     entry_points={
         'console_scripts': [
