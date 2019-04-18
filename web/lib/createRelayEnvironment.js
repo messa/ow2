@@ -23,7 +23,7 @@ function getFetchQuery(req) {
     }
     if (req) {
       // we are in server Node.js (Next.js SSR)
-      const gqlEndpoint = req.configuration.get('overwatch_hub:url')
+      const gqlEndpoint = req.configuration.get('overwatch_hub:url') + '/graphql'
       const hubClientToken = req.configuration.get('overwatch_hub:client_token')
       fetchOptions.headers['Authorization'] = `Bearer ${hubClientToken}`
       fetchOptions.credentials = 'omit'
