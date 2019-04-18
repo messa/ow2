@@ -4,7 +4,7 @@ import withData from '../lib/withData'
 import Layout from '../components/Layout'
 import StreamList from '../components/StreamList'
 import Container from '../components/ui/Container'
-import LabelFromJSON from '../components/LabelFromJSON'
+import LabelFromJSON from '../components/util/LabelFromJSON'
 import DateTime from '../components/util/DateTime'
 
 class StreamsPage extends React.Component {
