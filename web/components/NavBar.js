@@ -4,44 +4,51 @@ import Link from 'next/link'
 export default ({ activeItem }) => {
   const navLink = (name, href, title) => {
     if (name === activeItem) {
-      return (<b><Link href={href}><a className='active'>{title}</a></Link></b>)
+      return (<Link href={href}><a className='active'>{title}</a></Link>)
     } else {
       return (<Link href={href}><a>{title}</a></Link>)
     }
   }
   return (
     <nav className='mainNav'>
-      <div className='siteName'>
-        <Link href="/dashboard"><a>Overwatch</a></Link>
-      </div>
+      <Link href="/dashboard"><a className='siteName'>Overwatch</a></Link>
       {navLink('dashboard', '/dashboard', 'Dashboard')}
       {navLink('streams', '/streams', 'Streams')}
       <style jsx>{`
         nav {
-          background: #247;
+          background: hsl(216, 50%, 30%);
           color: #fff;
           display: flex;
-          min-height: 40px;
+          min-height: 30px;
           align-items: center;
           padding: 0 1em;
         }
-        nav :global(a), nav :global(a.active:hover) {
-          color: #fff;
+        nav :global(a) {
+          color: hsl(216, 100%, 90%);
           text-decoration: none;
         }
         nav :global(a:hover) {
-          color: #ccc;
+          color: hsl(216, 100%, 100%);
           text-decoration: none;
         }
-        nav > :global(*) {
-          padding: 3px 10px;
-        }
-        .siteName {
+        nav :global(a.active) {
+          color: hsl(216, 50%, 90%);
           font-weight: 600;
         }
-        .siteName a {
+        nav :global(a.active:hover) {
+          color: #fff;
+        }
+        nav > :global(*) {
+          padding: 5px 10px;
+        }
+        nav .siteName,
+        nav a.siteName {
+          color: hsl(216, 100%, 85%);
+          font-weight: 600;
           text-decoration: none;
-          color: #acf;
+        }
+        nav a.siteName:hover {
+          color: hsl(216, 100%, 90%);
         }
       `}</style>
     </nav>
