@@ -5,7 +5,7 @@ import DateTime from './util/DateTime'
 class SnapshotHistory extends React.Component {
 
   render() {
-    const { snapshots } = this.props
+    const { snapshots, activeSnapshotId } = this.props
     return (
       <div className='SnapshotHistory'>
         <table>
@@ -13,8 +13,20 @@ class SnapshotHistory extends React.Component {
             {snapshots.map(snapshot => (
               <tr key={snapshot.id}>
                 <td>
-                  <Link href={{ pathname: '/streamSnapshot', query: { id: snapshot.snapshotId } }}><a>
-                    <code>{snapshot.snapshotId}</code>
+                  <Link
+                    href={{
+                      pathname: '/stream',
+                      query: {
+                        'id': snapshot.streamId,
+                        'tab': 'history',
+                        'historySnapshotId': snapshot.snapshotId }
+                    }}
+                  ><a>
+                    {snapshot.snapshotId === activeSnapshotId ? (
+                      <code><b>{snapshot.snapshotId}</b></code>
+                    ) : (
+                      <code>{snapshot.snapshotId}</code>
+                    )}
                   </a></Link>
                 </td>
                 <td>

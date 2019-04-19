@@ -13,11 +13,13 @@ import DateTime from '../components/util/DateTime'
 class StreamsPage extends React.Component {
 
   render() {
-    const { stream } = this.props
+    const { stream, historySnapshot } = this.props
     const { query } = this.props.url
     const showTab = query['tab'] || 'lastSnapshot'
+    const { historySnapshotId } = query
     const { streamId, lastSnapshot, lastSnapshotDate } = stream
     const lastSnapshotState = lastSnapshot && JSON.parse(lastSnapshot.stateJSON)
+    const historySnapshotState = historySnapshot && JSON.parse(historySnapshot.stateJSON)
     const snapshots = stream.snapshots && stream.snapshots.edges.map(edge => edge.node)
     return (
       <Layout activeItem='streams'>
@@ -59,7 +61,20 @@ class StreamsPage extends React.Component {
         )}
 
         {showTab === 'history' && (
-          <SnapshotHistory snapshots={snapshots} />
+          <div style={{ display: 'flex' }}>
+            <div>
+              <SnapshotHistory
+                snapshots={snapshots}
+                activeSnapshotId={historySnapshotId}
+              />
+            </div>
+            <div style={{ marginLeft: 25 }}>
+              {historySnapshotState && (
+                <pre>{JSON.stringify({ historySnapshotState }, null, 4)}</pre>
+              )}
+            </div>
+          </div>
+
         )}
 
         </Container>
@@ -74,12 +89,16 @@ export default withData(withRouter(StreamsPage), {
     streamId: query.id,
     getLastSnapshot: !query.tab,
     getSnapshots: query.tab === 'history',
+    getHistorySnapshot: !!query.historySnapshotId,
+    historySnapshotId: query.historySnapshotId || '',
   }),
   query: graphql`
     query streamQuery(
       $streamId: String!,
       $getLastSnapshot: Boolean!,
-      $getSnapshots: Boolean!
+      $getSnapshots: Boolean!,
+      $getHistorySnapshot: Boolean!,
+      $historySnapshotId: String!,
     ) {
       stream(streamId: $streamId) {
         id
@@ -101,6 +120,13 @@ export default withData(withRouter(StreamsPage), {
             }
           }
         }
+      }
+      historySnapshot: streamSnapshot(snapshotId: $historySnapshotId) @include(if: $getHistorySnapshot) {
+        id
+        snapshotId
+        streamId
+        date
+        stateJSON
       }
     }
   `
