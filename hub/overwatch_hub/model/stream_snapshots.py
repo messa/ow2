@@ -13,6 +13,12 @@ from .helpers import to_objectid
 logger = getLogger(__name__)
 
 
+def to_utc(dt):
+    utc_dt = utc.normalize(dt) if dt.tzinfo else utc.localize(dt)
+    logger.debug('utc_localize(%r) -> %r', dt, utc_dt)
+    return utc_dt
+
+
 class StreamSnapshots:
 
     def __init__(self, db):
@@ -108,7 +114,7 @@ class StreamSnapshotMetadata:
 
     def __init__(self, doc_snapshot):
         self.id = doc_snapshot['_id']
-        self.date = utc.localize(doc_snapshot['date'])
+        self.date = to_utc(doc_snapshot['date'])
         self.stream_id = doc_snapshot['stream_id']
 
     def __repr__(self):
@@ -122,7 +128,7 @@ class StreamSnapshot:
     def __init__(self, doc_snapshot, doc_state):
         assert not doc_state or doc_snapshot['_id'] == doc_state['_id']
         self.id = doc_snapshot['_id']
-        self.date = utc.localize(doc_snapshot['date'])
+        self.date = to_utc(doc_snapshot['date'])
         self.stream_id = doc_snapshot['stream_id']
         self.state_json = doc_snapshot.get('state_json') or doc_state['state_json']
 
