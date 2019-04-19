@@ -72,3 +72,28 @@ a.LabelPill {
   background-color: hsl(0, 0%, 96%);
   border-radius: 0 7px 7px 0;
 }
+
+/* Tabs */
+
+.Tabs {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  width: 100%;
+  border-bottom: 1px solid hsl(0, 0%, 50%);
+}
+.Tabs > * {
+  padding: 4px 12px;
+}
+.Tabs > .active {
+  border-radius: 5px 5px 0 0;
+  border-top: 1px solid hsl(0, 0%, 50%);
+  border-left: 1px solid hsl(0, 0%, 50%);
+  border-right: 1px solid hsl(0, 0%, 50%);
+  border-bottom: 1px solid white;
+  margin-bottom: -1px;
+}
+.Tabs a {
+  color: #000;
+  text-decoration: none;
+}
