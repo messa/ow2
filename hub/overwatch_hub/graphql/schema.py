@@ -1,5 +1,5 @@
 import asyncio
-from graphene import ObjectType, Field, Int, String, Schema, DateTime
+from graphene import ObjectType, Field, Int, String, Schema, DateTime, List
 from graphene.relay import Node, Connection, ConnectionField
 from graphene.types.json import JSONString
 from logging import getLogger
@@ -101,6 +101,34 @@ class StreamSnapshotMetadataConnection (Connection):
         node = StreamSnapshotMetadata
 
 
+class SnapshotItem (ObjectType):
+
+    path = List(String)
+    path_str = String(name='pathStr')
+    key = String()
+    value_json = JSONString(name='valueJSON')
+    check_json = JSONString(name='checkJSON')
+    watchdog_json = JSONString(name='watchdogJSON')
+
+    def resolve_path(item, info):
+        return item['path']
+
+    def resolve_path_str(item, info):
+        return ' :: '.join(item['path'])
+
+    def resolve_key(item, info):
+        return item['key']
+
+    def resolve_value_json(item, info):
+        return item.get('value')
+
+    def resolve_check_json(item, info):
+        return item.get('check')
+
+    def resolve_watchdog_json(item, info):
+        return item.get('watchdog')
+
+
 class StreamSnapshot (ObjectType):
 
     class Meta:
@@ -114,6 +142,7 @@ class StreamSnapshot (ObjectType):
     stream_id = String(name='streamId')
     date = DateTime()
     state_json = String(name='stateJSON')
+    state_items = List(SnapshotItem)
 
     stream = Field(lambda: Stream)
 
@@ -124,6 +153,9 @@ class StreamSnapshot (ObjectType):
         model = get_model(info)
         stream = await model.streams.get_by_id(snapshot.stream_id)
         return stream
+
+    def resolve_state_items(snapshot, info):
+        return snapshot.state_items_flat
 
 
 class Stream (ObjectType):
