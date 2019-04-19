@@ -27,7 +27,7 @@ class StreamList extends React.Component {
                   </a></Link>
                 </td>
                 <td><LabelFromJSON labelJSON={stream.labelJSON} /></td>
-                <td><DateTime value={stream.lastSnapshot.date} /></td>
+                <td><DateTime value={stream.lastSnapshotDate} /></td>
               </tr>
             ))}
           </tbody>
@@ -47,9 +47,7 @@ export default createFragmentContainer(StreamList, {
             id
             streamId
             labelJSON
-            lastSnapshot {
-              date
-            }
+            lastSnapshotDate
           }
         }
       }

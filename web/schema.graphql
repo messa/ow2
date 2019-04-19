@@ -38,6 +38,7 @@ type Stream implements Node {
   labelJSON: String
   streamId: String
   lastSnapshot: StreamSnapshot
+  lastSnapshotDate: DateTime
 }
 
 type StreamConnection {
