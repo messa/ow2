@@ -7,7 +7,7 @@ from pymongo import DESCENDING as DESC
 from pytz import utc
 
 from ..util import to_compact_json
-from .helpers import to_objectid
+from .helpers import to_objectid, parse_state, flatten_nested_state_items
 
 
 logger = getLogger(__name__)
@@ -123,7 +123,10 @@ class StreamSnapshotMetadata:
 
 class StreamSnapshot:
 
-    __slots__ = ('id', 'date', 'stream_id',  'state_json')
+    __slots__ = (
+        'id', 'date', 'stream_id',
+        'state_json', '_state_nested_items', '_state_flat_items',
+    )
 
     def __init__(self, doc_snapshot, doc_state):
         assert not doc_state or doc_snapshot['_id'] == doc_state['_id']
@@ -131,6 +134,20 @@ class StreamSnapshot:
         self.date = to_utc(doc_snapshot['date'])
         self.stream_id = doc_snapshot['stream_id']
         self.state_json = doc_snapshot.get('state_json') or doc_state['state_json']
+        self._state_nested_items = None
+        self._state_flat_items = None
+
+    @property
+    def state_items_nested(self):
+        if self._state_nested_items is None:
+            self._state_nested_items = parse_state(self.state_json)
+        return self._state_nested_items
+
+    @property
+    def state_items_flat(self):
+        if self._state_flat_items is None:
+            self._state_flat_items = flatten_nested_state_items(self.state_items_nested)
+        return self._state_flat_items
 
     def __repr__(self):
         return f'<{self.__class__.__name__} {self.id}>'
