@@ -39,6 +39,7 @@ type Stream implements Node {
   streamId: String
   lastSnapshot: StreamSnapshot
   lastSnapshotDate: DateTime
+  snapshots(before: String, after: String, first: Int, last: Int): StreamSnapshotMetadataConnection
 }
 
 type StreamConnection {
@@ -62,5 +63,27 @@ type StreamSnapshot implements Node {
   date: DateTime
   stateJSON: String
   stream: Stream
+}
+
+type StreamSnapshotMetadata implements Node {
+  """The ID of the object."""
+  id: ID!
+  snapshotId: String
+  streamId: String
+  date: DateTime
+  stream: Stream
+}
+
+type StreamSnapshotMetadataConnection {
+  pageInfo: PageInfo!
+  edges: [StreamSnapshotMetadataEdge]!
+}
+
+type StreamSnapshotMetadataEdge {
+  """The item at the end of the edge"""
+  node: StreamSnapshotMetadata
+
+  """A cursor for use in pagination"""
+  cursor: String!
 }
 
