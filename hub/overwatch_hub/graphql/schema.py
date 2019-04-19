@@ -175,6 +175,7 @@ class Query (ObjectType):
 
     stream = Field(Stream, stream_id=String(required=True))
     streams = ConnectionField(StreamConnection)
+    stream_snapshot = Field(StreamSnapshot, snapshot_id=String(required=True))
 
     async def resolve_stream(root, info, stream_id):
         model = get_model(info)
@@ -185,6 +186,11 @@ class Query (ObjectType):
         model = get_model(info)
         streams = await model.streams.list_all()
         return streams
+
+    async def resolve_stream_snapshot(root, info, snapshot_id):
+        model = get_model(info)
+        snapshot = await model.stream_snapshots.get_by_id(snapshot_id)
+        return snapshot
 
 
 def get_model(info):

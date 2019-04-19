@@ -50,6 +50,12 @@ class StreamSnapshots:
             sort=[('date', DESC)])
         return await self._obj(doc)
 
+    async def get_by_id(self, snapshot_id):
+        assert isinstance(snapshot_id, str)
+        doc = await self._c_snapshots.find_one({'_id': to_objectid(snapshot_id)})
+        return await self._obj(doc)
+
+
     async def get_latest_metadata(self, stream_id):
         assert isinstance(stream_id, str)
         doc = await self._c_snapshots.find_one(
