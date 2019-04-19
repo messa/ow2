@@ -58,6 +58,8 @@ function NestedItem({ nodeKey, node }) {
             </span>
           )}
 
+          <span className='more' style={{ marginLeft: 10 }}>more</span>
+
         </>
       )}
 
@@ -89,6 +91,16 @@ export default class NestedItems extends React.Component {
         <style jsx>{`
           .nestedItemsRoot :global(li:first-child) {
             margin-top: 0;
+          }
+          .nestedItemsRoot :global(.nestedItem) :global(.more) {
+            font-size: 10px;
+            font-weight: 600;
+            color: hsl(330, 50%, 50%);
+            cursor: pointer;
+            visibility: hidden;
+          }
+          .nestedItemsRoot :global(.nestedItem:hover) > :global(.more) {
+            visibility: visible;
           }
         `}</style>
 
