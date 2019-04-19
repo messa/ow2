@@ -71,6 +71,36 @@ class PackConnection (Connection):
 '''
 
 
+class StreamSnapshotMetadata (ObjectType):
+
+    class Meta:
+        interfaces = (Node, )
+
+    @classmethod
+    def get_node(cls, info, id):
+        raise Exception('NIY')
+
+    snapshot_id = String(name='snapshotId')
+    stream_id = String(name='streamId')
+    date = DateTime()
+
+    stream = Field(lambda: Stream)
+
+    def resolve_snapshot_id(snapshot, info):
+        return snapshot.id
+
+    async def resolve_stream(snapshot, info):
+        model = get_model(info)
+        stream = await model.streams.get_by_id(snapshot.stream_id)
+        return stream
+
+
+class StreamSnapshotMetadataConnection (Connection):
+
+    class Meta:
+        node = StreamSnapshotMetadata
+
+
 class StreamSnapshot (ObjectType):
 
     class Meta:
@@ -109,6 +139,7 @@ class Stream (ObjectType):
     stream_id = String(name='streamId')
     last_snapshot = Field(StreamSnapshot, name='lastSnapshot')
     last_snapshot_date = DateTime(name='lastSnapshotDate')
+    snapshots = ConnectionField(StreamSnapshotMetadataConnection)
 
     def resolve_stream_id(stream, info):
         return stream.id
@@ -125,6 +156,11 @@ class Stream (ObjectType):
         model = get_model(info)
         snapshot = await model.stream_snapshots.get_latest_metadata(stream_id=stream.id)
         return snapshot.date
+
+    async def resolve_snapshots(stream, info):
+        model = get_model(info)
+        snapshots = await model.stream_snapshots.list_metadata(stream_id=stream.id)
+        return snapshots
 
 
 class StreamConnection (Connection):

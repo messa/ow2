@@ -57,6 +57,15 @@ class StreamSnapshots:
             sort=[('date', DESC)])
         return StreamSnapshotMetadata(doc)
 
+    async def list_metadata(self, stream_id):
+        assert isinstance(stream_id, str)
+        c = self._c_snapshots.find(
+            {'stream_id': stream_id},
+            sort=[('date', DESC)],
+            limit=10000)
+        docs = await c.to_list(length=None)
+        return [StreamSnapshotMetadata(doc) for doc in docs]
+
     async def _obj(self, doc_snapshot, doc_state=None):
         if not doc_state and not doc_snapshot.get('state_json'):
             doc_state = await self._c_states.find_one({'_id': doc_snapshot['_id']})
