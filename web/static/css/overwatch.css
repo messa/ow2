@@ -82,8 +82,8 @@ a.LabelPill {
 /* Tabs */
 
 .Tabs {
-  margin-top: 1rem;
-  margin-bottom: 1rem;
+  margin-top: 15px;
+  margin-bottom: 20px;
   display: flex;
   width: 100%;
   border-bottom: 1px solid hsl(0, 0%, 50%);
@@ -126,6 +126,7 @@ a.LabelPill {
 }
 
 /* streamSnapshot-NestedItems */
+
 .streamSnapshot-NestedItems li.nestedItem {
   margin-top: 2px;
   margin-bottom: 2px;

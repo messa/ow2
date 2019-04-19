@@ -33,8 +33,7 @@ class StateViewSwitcher extends React.Component {
         ))}
         <style jsx>{`
           .StateViewSwitcher {
-            margin-top: 16px;
-            margin-bottom: 16px;
+            margin-bottom: 10px;
           }
           .StateViewSwitcher > * {
             padding: 3px 10px;
