@@ -62,7 +62,8 @@ class StreamSnapshots:
             q['stream_id'] = stream_id
         if after_snapshot_id:
             q['_id'] = {'$gt': to_objectid(after_snapshot_id)}
-        snapshot_docs = await shield(self._c_snapshots.find(q, sort=[('_id', ASC)]).to_list(length=500))
+        c = self._c_snapshots.find(q, sort=[('_id', ASC)], limit=500)
+        snapshot_docs = await shield(c.to_list(length=None))
         state_q = {'_id': {'$in': [d['_id'] for d in snapshot_docs]}}
         state_docs = await shield(self._c_states.find(state_q).to_list(length=None))
         state_docs = {d['_id']: d for d in state_docs}
