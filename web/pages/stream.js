@@ -106,7 +106,7 @@ class StreamPage extends React.Component {
                 activeSnapshotId={historySnapshotId}
               />
             </div>
-            <div style={{ marginLeft: 25 }}>
+            <div style={{ marginLeft: 25, flexGrow: 1 }}>
               {historySnapshot && (
                 <StreamSnapshot
                   stateView={historyStateView}

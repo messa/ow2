@@ -14,12 +14,14 @@ class StreamSnapshot extends React.Component {
     return (
       <div className='StreamSnapshot'>
 
-        <StateViewSwitcher
-          active={stateView}
-          nestedViewHref={nestedViewHref}
-          flatViewHref={flatViewHref}
-          jsonViewHref={jsonViewHref}
-        />
+        <div style={{ float: 'right' }}>
+          <StateViewSwitcher
+            active={stateView}
+            nestedViewHref={nestedViewHref}
+            flatViewHref={flatViewHref}
+            jsonViewHref={jsonViewHref}
+          />
+        </div>
 
         {stateView === 'nested' && (
           <NestedItems
@@ -35,7 +37,9 @@ class StreamSnapshot extends React.Component {
 
         {stateView === 'json' && (
           <>
-            <p>The raw JSON state received (re-idented):</p>
+            <p style={{ marginTop: 0 }}>
+              The raw JSON state received (re-idented):
+            </p>
             <pre
               style={{
                 fontSize: 12,

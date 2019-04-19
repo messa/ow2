@@ -80,11 +80,17 @@ export default class NestedItems extends React.Component {
     return (
       <div className='streamSnapshot-NestedItems'>
 
-        <ul className='nestedItems'>
+        <ul className='nestedItems nestedItemsRoot' style={{ marginTop: 0, marginLeft: 10 }}>
           {Array.from(nestedItemsRootNode.children.entries()).map(([k, v], i) => (
             <NestedItem key={i} nodeKey={k} node={v} />
           ))}
         </ul>
+
+        <style jsx>{`
+          .nestedItemsRoot :global(li:first-child) {
+            margin-top: 0;
+          }
+        `}</style>
 
       </div>
     )
