@@ -14,7 +14,7 @@ class StreamsPage extends React.Component {
 
   render() {
     const { stream, historySnapshot } = this.props
-    const { query } = this.props.url
+    const { query } = this.props.router
     const showTab = query['tab'] || 'lastSnapshot'
     const { historySnapshotId } = query
     const { streamId, lastSnapshot, lastSnapshotDate } = stream
@@ -26,11 +26,11 @@ class StreamsPage extends React.Component {
         <Container>
           <h1>Stream <code>{stream.streamId}</code></h1>
 
-          <div class="row">
-            <div class="eight columns">
+          <div className="row">
+            <div className="eight columns">
               <LabelFromJSON labelJSON={stream.labelJSON} />
             </div>
-            <div class="four columns text-right">
+            <div className="four columns text-right">
               <DateTime value={lastSnapshotDate} />
             </div>
            </div>
