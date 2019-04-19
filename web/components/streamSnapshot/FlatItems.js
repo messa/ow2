@@ -18,7 +18,7 @@ export default class FlatItems extends React.Component {
                   {i < item.path.length - 1 ? (
                     pathPart
                   ) : (
-                    <span className='key'>{pathPart}</span>
+                    <b className='key'>{pathPart}</b>
                   )}
                 </span>
               ))}
