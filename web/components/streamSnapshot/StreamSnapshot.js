@@ -1,6 +1,7 @@
 import React from 'react'
 import { createFragmentContainer, graphql } from 'react-relay'
 import Link from 'next/link'
+import NestedItems from './NestedItems'
 import FlatItems from './FlatItems'
 import StateViewSwitcher from './StateViewSwitcher'
 
@@ -20,7 +21,13 @@ class StreamSnapshot extends React.Component {
           jsonViewHref={jsonViewHref}
         />
 
-        {(stateView === 'flat' || stateView === 'nested') && (
+        {stateView === 'nested' && (
+          <NestedItems
+            stateItems={snapshot.stateItems}
+          />
+        )}
+
+        {stateView === 'flat' && (
           <FlatItems
             stateItems={snapshot.stateItems}
           />

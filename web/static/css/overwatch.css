@@ -1,4 +1,6 @@
-body {
+body,
+ul, ul ul, ul ol,
+ol, ol ol, ol ul {
   font-size: 11px;
 }
 
@@ -121,4 +123,16 @@ a.LabelPill {
     margin: 0 auto;
     padding: 0 20px;
   }
+}
+
+/* streamSnapshot-NestedItems */
+.streamSnapshot-NestedItems li.nestedItem {
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+.streamSnapshot-NestedItems ul {
+}
+.streamSnapshot-NestedItems li.nestedItem ul {
+  margin-top: 2px;
+  margin-bottom: 2px;
 }
