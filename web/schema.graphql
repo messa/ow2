@@ -5,6 +5,9 @@ value as specified by
 """
 scalar DateTime
 
+"""JSON String"""
+scalar JSONString
+
 """An object with an ID"""
 interface Node {
   """The ID of the object."""
@@ -31,6 +34,15 @@ type Query {
   stream(streamId: String!): Stream
   streams(before: String, after: String, first: Int, last: Int): StreamConnection
   streamSnapshot(snapshotId: String!): StreamSnapshot
+}
+
+type SnapshotItem {
+  path: [String]
+  pathStr: String
+  key: String
+  valueJSON: JSONString
+  checkJSON: JSONString
+  watchdogJSON: JSONString
 }
 
 type Stream implements Node {
@@ -63,6 +75,7 @@ type StreamSnapshot implements Node {
   streamId: String
   date: DateTime
   stateJSON: String
+  stateItems: [SnapshotItem]
   stream: Stream
 }
 

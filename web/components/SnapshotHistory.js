@@ -10,8 +10,11 @@ class SnapshotHistory extends React.Component {
       <div className='SnapshotHistory'>
         <table>
           <tbody>
-            {snapshots.map(snapshot => (
+            {snapshots.map((snapshot, n) => (
               <tr key={snapshot.id}>
+                <td style={{ textAlign: 'right' }}>
+                  {n+1}.
+                </td>
                 <td>
                   <Link
                     href={{
