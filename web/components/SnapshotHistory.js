@@ -1,4 +1,5 @@
 import React from 'react'
+import Link from 'next/link'
 import DateTime from './util/DateTime'
 
 class SnapshotHistory extends React.Component {
@@ -12,7 +13,9 @@ class SnapshotHistory extends React.Component {
             {snapshots.map(snapshot => (
               <tr key={snapshot.id}>
                 <td>
-                  <code>{snapshot.snapshotId}</code>
+                  <Link href={{ pathname: '/streamSnapshot', query: { id: snapshot.snapshotId } }}><a>
+                    <code>{snapshot.snapshotId}</code>
+                  </a></Link>
                 </td>
                 <td>
                   <DateTime value={snapshot.date} />
