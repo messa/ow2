@@ -30,6 +30,7 @@ type Query {
   node(id: ID!): Node
   stream(streamId: String!): Stream
   streams(before: String, after: String, first: Int, last: Int): StreamConnection
+  streamSnapshot(snapshotId: String!): StreamSnapshot
 }
 
 type Stream implements Node {
