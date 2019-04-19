@@ -11,6 +11,7 @@ class StreamSnapshot extends React.Component {
     const { snapshot } = this.props
     const { nestedViewHref, flatViewHref, jsonViewHref } = this.props
     let { stateView } = this.props
+    const { streamId } = snapshot
     return (
       <div className='StreamSnapshot'>
 
@@ -26,12 +27,14 @@ class StreamSnapshot extends React.Component {
         {stateView === 'nested' && (
           <NestedItems
             stateItems={snapshot.stateItems}
+            streamId={streamId}
           />
         )}
 
         {stateView === 'flat' && (
           <FlatItems
             stateItems={snapshot.stateItems}
+            streamId={streamId}
           />
         )}
 
