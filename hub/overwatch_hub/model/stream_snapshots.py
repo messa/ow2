@@ -50,6 +50,13 @@ class StreamSnapshots:
             sort=[('date', DESC)])
         return await self._obj(doc)
 
+    async def get_latest_metadata(self, stream_id):
+        assert isinstance(stream_id, str)
+        doc = await self._c_snapshots.find_one(
+            {'stream_id': stream_id},
+            sort=[('date', DESC)])
+        return StreamSnapshotMetadata(doc)
+
     async def _obj(self, doc_snapshot, doc_state=None):
         if not doc_state and not doc_snapshot.get('state_json'):
             doc_state = await self._c_states.find_one({'_id': doc_snapshot['_id']})
@@ -80,9 +87,22 @@ class StreamSnapshots:
         return out
 
 
+class StreamSnapshotMetadata:
+
+    __slots__ = ('id', 'date', 'stream_id')
+
+    def __init__(self, doc_snapshot):
+        self.id = doc_snapshot['_id']
+        self.date = utc.localize(doc_snapshot['date'])
+        self.stream_id = doc_snapshot['stream_id']
+
+    def __repr__(self):
+        return f'<{self.__class__.__name__} {self.id}>'
+
+
 class StreamSnapshot:
 
-    __slots__ = ('id', 'date', 'state_json', 'stream_id')
+    __slots__ = ('id', 'date', 'stream_id',  'state_json')
 
     def __init__(self, doc_snapshot, doc_state):
         assert not doc_state or doc_snapshot['_id'] == doc_state['_id']
@@ -90,3 +110,6 @@ class StreamSnapshot:
         self.date = utc.localize(doc_snapshot['date'])
         self.stream_id = doc_snapshot['stream_id']
         self.state_json = doc_snapshot.get('state_json') or doc_state['state_json']
+
+    def __repr__(self):
+        return f'<{self.__class__.__name__} {self.id}>'

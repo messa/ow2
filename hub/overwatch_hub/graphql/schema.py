@@ -108,6 +108,7 @@ class Stream (ObjectType):
     label_json = String(name='labelJSON')
     stream_id = String(name='streamId')
     last_snapshot = Field(StreamSnapshot, name='lastSnapshot')
+    last_snapshot_date = DateTime(name='lastSnapshotDate')
 
     def resolve_stream_id(stream, info):
         return stream.id
@@ -119,6 +120,11 @@ class Stream (ObjectType):
         model = get_model(info)
         snapshot = await model.stream_snapshots.get_latest(stream_id=stream.id)
         return snapshot
+
+    async def resolve_last_snapshot_date(stream, info):
+        model = get_model(info)
+        snapshot = await model.stream_snapshots.get_latest_metadata(stream_id=stream.id)
+        return snapshot.date
 
 
 class StreamConnection (Connection):
