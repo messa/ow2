@@ -9,17 +9,32 @@ import StreamList from '../components/StreamList'
 import SnapshotHistory from '../components/SnapshotHistory'
 import LabelFromJSON from '../components/util/LabelFromJSON'
 import DateTime from '../components/util/DateTime'
+import StreamSnapshot from '../components/streamSnapshot/StreamSnapshot'
 
-class StreamsPage extends React.Component {
+class StreamPage extends React.Component {
+
+  static async getInitialProps({ query }) {
+    return {
+      streamId: query['id'],
+      showTab: query['tab'] || 'lastSnapshot',
+      stateView: query['stateView'] || 'nested',
+      historySnapshotId: query['historySnapshotId'],
+      historyStateView: query['historyStateView'] || 'nested',
+    }
+  }
 
   render() {
-    const { stream, historySnapshot } = this.props
-    const { query } = this.props.router
-    const showTab = query['tab'] || 'lastSnapshot'
-    const { historySnapshotId } = query
+    const {
+      stream, historySnapshot, showTab, stateView,
+      historySnapshotId, historyStateView
+    } = this.props
+    //const { query } = this.props.router
+    //const showTab = query['tab'] || 'lastSnapshot'
+    //const stateView = query['stateView'] || 'nested'
+    //const { historySnapshotId } = query
     const { streamId, lastSnapshot, lastSnapshotDate } = stream
-    const lastSnapshotState = lastSnapshot && JSON.parse(lastSnapshot.stateJSON)
-    const historySnapshotState = historySnapshot && JSON.parse(historySnapshot.stateJSON)
+    //const lastSnapshotState = lastSnapshot && JSON.parse(lastSnapshot.stateJSON)
+    //const historySnapshotState = historySnapshot && JSON.parse(historySnapshot.stateJSON)
     const snapshots = stream.snapshots && stream.snapshots.edges.map(edge => edge.node)
     return (
       <Layout activeItem='streams'>
@@ -57,7 +72,30 @@ class StreamsPage extends React.Component {
           />
 
         {showTab === 'lastSnapshot' && (
-          <pre>{JSON.stringify({ lastSnapshotState }, null, 4)}</pre>
+          <StreamSnapshot
+            snapshot={lastSnapshot}
+            stateView={stateView}
+            nestedViewHref={{
+              pathname: '/stream',
+              query: {
+                'id': streamId,
+              }
+            }}
+            flatViewHref={{
+              pathname: '/stream',
+              query: {
+                'id': streamId,
+                'stateView': 'flat',
+              }
+            }}
+            jsonViewHref={{
+              pathname: '/stream',
+              query: {
+                'id': streamId,
+                'stateView': 'json',
+              }
+            }}
+          />
         )}
 
         {showTab === 'history' && (
@@ -69,8 +107,37 @@ class StreamsPage extends React.Component {
               />
             </div>
             <div style={{ marginLeft: 25 }}>
-              {historySnapshotState && (
-                <pre>{JSON.stringify({ historySnapshotState }, null, 4)}</pre>
+              {historySnapshot && (
+                <StreamSnapshot
+                  stateView={historyStateView}
+                  snapshot={historySnapshot}
+                  nestedViewHref={{
+                    pathname: '/stream',
+                    query: {
+                      'id': streamId,
+                      'tab': 'history',
+                      'historySnapshotId': historySnapshotId,
+                    }
+                  }}
+                  flatViewHref={{
+                    pathname: '/stream',
+                    query: {
+                      'id': streamId,
+                      'tab': 'history',
+                      'historySnapshotId': historySnapshotId,
+                      'historyStateView': 'flat',
+                    }
+                  }}
+                  jsonViewHref={{
+                    pathname: '/stream',
+                    query: {
+                      'id': streamId,
+                      'tab': 'history',
+                      'historySnapshotId': historySnapshotId,
+                      'historyStateView': 'json',
+                    }
+                  }}
+                />
               )}
             </div>
           </div>
@@ -84,50 +151,65 @@ class StreamsPage extends React.Component {
 
 }
 
-export default withData(withRouter(StreamsPage), {
-  variables: ({ query }) => ({
-    streamId: query.id,
-    getLastSnapshot: !query.tab,
-    getSnapshots: query.tab === 'history',
-    getHistorySnapshot: !!query.historySnapshotId,
-    historySnapshotId: query.historySnapshotId || '',
-  }),
-  query: graphql`
-    query streamQuery(
-      $streamId: String!,
-      $getLastSnapshot: Boolean!,
-      $getSnapshots: Boolean!,
-      $getHistorySnapshot: Boolean!,
-      $historySnapshotId: String!,
-    ) {
-      stream(streamId: $streamId) {
-        id
-        streamId
-        labelJSON
-        lastSnapshotDate
-        lastSnapshot @include(if: $getLastSnapshot) {
-          date
-          stateJSON
-        }
-        snapshots @include(if: $getSnapshots) {
-          edges {
-            cursor
-            node {
-              id
-              streamId
-              snapshotId
-              date
+export default withData(
+  withRouter(StreamPage),
+  {
+    variables: ({ query }, { streamId, showTab, stateView, historySnapshotId, historyStateView }) => ({
+      streamId,
+      getLastSnapshot: showTab === 'lastSnapshot',
+      getLastSnapshotJSON: showTab === 'lastSnapshot' && stateView === 'json',
+      getLastSnapshotItems: showTab === 'lastSnapshot' && stateView !== 'json',
+      getSnapshots: showTab === 'history',
+      getHistorySnapshot: showTab === 'history' && !!historySnapshotId,
+      getHistorySnapshotJSON: showTab === 'history' && historyStateView === 'json',
+      getHistorySnapshotItems: showTab === 'history' && historyStateView !== 'json',
+      historySnapshotId: historySnapshotId || '',
+    }),
+    query: graphql`
+      query streamQuery(
+        $streamId: String!,
+        $getLastSnapshot: Boolean!,
+        $getLastSnapshotJSON: Boolean!,
+        $getLastSnapshotItems: Boolean!,
+        $getSnapshots: Boolean!,
+        $getHistorySnapshot: Boolean!,
+        $getHistorySnapshotJSON: Boolean!,
+        $getHistorySnapshotItems: Boolean!,
+        $historySnapshotId: String!,
+      ) {
+        stream(streamId: $streamId) {
+          id
+          streamId
+          labelJSON
+          lastSnapshotDate
+          lastSnapshot @include(if: $getLastSnapshot) {
+            id
+            ...StreamSnapshot_snapshot @arguments(
+              withJSON: $getLastSnapshotJSON,
+              withItems: $getLastSnapshotItems,
+            )
+          }
+          snapshots @include(if: $getSnapshots) {
+            edges {
+              cursor
+              node {
+                id
+                streamId
+                snapshotId
+                date
+              }
             }
           }
         }
+        historySnapshot: streamSnapshot(
+          snapshotId: $historySnapshotId
+        ) @include(if: $getHistorySnapshot) {
+          id
+          ...StreamSnapshot_snapshot @arguments(
+            withJSON: $getHistorySnapshotJSON,
+            withItems: $getHistorySnapshotItems,
+          )
+        }
       }
-      historySnapshot: streamSnapshot(snapshotId: $historySnapshotId) @include(if: $getHistorySnapshot) {
-        id
-        snapshotId
-        streamId
-        date
-        stateJSON
-      }
-    }
-  `
-})
+    `
+  })

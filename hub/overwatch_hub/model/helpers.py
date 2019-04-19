@@ -44,6 +44,7 @@ def _flatten(flat_items, nested_items, path):
     for item in nested_items:
         item = dict(item)
         item['path'] = path + (item['key'], )
-        flat_items.append(item)
+        if item.get('value') is not None or item.get('check') or item.get('watchdog'):
+            flat_items.append(item)
         if 'items' in item:
             _flatten(flat_items, item.pop('items'), item['path'])

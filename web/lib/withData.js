@@ -21,7 +21,7 @@ export default function withData(ComposedComponent, options = {}) {
       if (options.query) {
         let variables = {}
         if (options.variables) {
-          variables = options.variables(ctx)
+          variables = options.variables(ctx, composedInitialProps)
         } else if (composedInitialProps.relayVariables) {
           variables = composedInitialProps.relayVariables
         }
