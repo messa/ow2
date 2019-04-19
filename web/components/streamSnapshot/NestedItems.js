@@ -1,4 +1,6 @@
 import React from 'react'
+import FullWidth from '../ui/FullWidth'
+import StreamItemDetail from './StreamItemDetail'
 
 function buildTree(flatItems) {
   const root = {
@@ -22,85 +24,123 @@ function buildTree(flatItems) {
   return root
 }
 
-function NestedItem({ nodeKey, node }) {
-  const { item } = node
-  return (
-    <li className='nestedItem'>
-      <b
-        style={{
-          display: 'inline-block',
-          minWidth: 50,
-        }}
-      >
-        {nodeKey}
-      </b>
+class NestedItem extends React.Component {
 
-      {item && (
-        <>
+  state = {
+    showDetails: false,
+  }
 
-          {item.valueJSON && (
-            <span className='value' style={{ marginLeft: 5 }}>
-              <code style={{ fontSize: 12 }}>
-                {item.valueJSON}
-              </code>
-            </span>
+  onValueClick = () => {
+    //const { nodeKey, node } = this.props
+    //const { item } = node
+    //console.debug('onValueClick', nodeKey, JSON.stringify({ item }))
+    this.setState({ showDetails: !this.state.showDetails })
+  }
+
+  render() {
+    const { nodeKey, node, streamId } = this.props
+    const { item } = node
+    const { showDetails } = this.state
+    return (
+      <li className='nestedItem'>
+
+        <div className='itemData'>
+          <b
+            style={{
+              display: 'inline-block',
+              minWidth: 50,
+            }}
+          >
+            {nodeKey}
+          </b>
+
+          {item && (
+            <>
+
+              {item.valueJSON && (
+                <span
+                  className='value'
+                  style={{
+                    marginLeft: 5,
+                    cursor: 'pointer',
+                  }}
+                  onClick={this.onValueClick}
+                >
+                  <code style={{ fontSize: 12 }}>
+                    {item.valueJSON}
+                  </code>
+                </span>
+              )}
+
+              {item.checkJSON && (
+                <span className='check' style={{ marginLeft: 10 }}>
+                  <b>Check:</b> <code>{item.checkJSON}</code>
+                </span>
+              )}
+
+              {item.watchdogJSON && (
+                <span className='check' style={{ marginLeft: 10 }}>
+                  <b>Watchdog:</b> <code>{item.watchdogJSON}</code>
+                </span>
+              )}
+
+            </>
           )}
+        </div>
 
-          {item.checkJSON && (
-            <span className='check' style={{ marginLeft: 10 }}>
-              <b>Check:</b> <code>{item.checkJSON}</code>
-            </span>
-          )}
+        {(showDetails || (null && item && item.valueJSON === '4')) && (
+          <div style={{ marginTop: 2, marginBottom: 2 }}>
+            <FullWidth>
+              <StreamItemDetail item={item} streamId={streamId} />
+            </FullWidth>
+          </div>
+        )}
 
-          {item.watchdogJSON && (
-            <span className='check' style={{ marginLeft: 10 }}>
-              <b>Watchdog:</b> <code>{item.watchdogJSON}</code>
-            </span>
-          )}
+        {node.children.size > 0 && (
+          <ul className='nestedItems'>
+            {Array.from(node.children.entries()).map(([k, v], i) => (
+              <NestedItem key={i} nodeKey={k} node={v} streamId={streamId} />
+            ))}
+          </ul>
+        )}
 
-          <span className='more' style={{ marginLeft: 10 }}>more</span>
+        <style jsx>{`
+          .itemDetails {
+            padding: 1px;
+            background-color: #eee;
+            position: absolute;
+            margin-left: calc(-50vw + 50%);
+            width: 100vw;
+            box-sizing: border-box;
+          }
+        `}</style>
+      </li>
+    )
+  }
 
-        </>
-      )}
-
-      {node.children.size > 0 && (
-        <ul className='nestedItems'>
-          {Array.from(node.children.entries()).map(([k, v], i) => (
-            <NestedItem key={i} nodeKey={k} node={v} />
-          ))}
-        </ul>
-      )}
-    </li>
-  )
 }
 
 export default class NestedItems extends React.Component {
 
   render() {
-    const { stateItems } = this.props
-    const nestedItemsRootNode = buildTree(stateItems)
+    const { stateItems, streamId } = this.props
+    const nestedItemsRootNode = buildTree(stateItems)    
     return (
       <div className='streamSnapshot-NestedItems'>
 
         <ul className='nestedItems nestedItemsRoot' style={{ marginTop: 0, marginLeft: 10 }}>
           {Array.from(nestedItemsRootNode.children.entries()).map(([k, v], i) => (
-            <NestedItem key={i} nodeKey={k} node={v} />
+            <NestedItem key={i} nodeKey={k} node={v} streamId={streamId} />
           ))}
         </ul>
 
         <style jsx>{`
+          ul.nestedItemsRoot,
+          ul.nestedItemsRoot :global(ul) {
+            list-style: circle;
+          }
           .nestedItemsRoot :global(li:first-child) {
             margin-top: 0;
-          }
-          .nestedItemsRoot :global(.nestedItem) :global(.more) {
-            font-size: 10px;
-            font-weight: 600;
-            color: hsl(330, 50%, 50%);
-            cursor: pointer;
-            visibility: hidden;
-          }
-          .nestedItemsRoot :global(.nestedItem:hover) > :global(.more) {
-            visibility: visible;
           }
         `}</style>
 
