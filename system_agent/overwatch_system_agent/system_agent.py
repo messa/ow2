@@ -64,7 +64,10 @@ def run_system_agent_iteration(conf, sleep_interval):
     t0 = monotime()
     report_state = gather_state(conf)
     duration = monotime() - t0
-    report_state['duration'] = duration
+    report_state['duration'] = {
+        '__value': duration,
+        '__unit': 'seconds',
+    }
 
     # add watchdog
     #wd_interval = conf.watchdog_interval or sleep_interval + 30
@@ -102,29 +105,29 @@ def gather_state(conf):
         'volumes': gather_volumes(),
         'memory': gather_memory(),
         'swap': gather_swap(),
-        'outward_ip4': gather_outward_ip4(),
-        'outward_ip6': gather_outward_ip6(),
+        'public_source_ip4': gather_public_source_ip4(),
+        'public_source_ip6': gather_public_source_ip6(),
     }
 
 
-def gather_outward_ip4():
+def gather_public_source_ip4():
     try:
         r = rs.get('https://ip4.messa.cz/')
         r.raise_for_status()
         return r.text.strip()
     except Exception as e:
-        logger.warning('Failed to retrieve outward_ip4: %r', e)
+        logger.warning('Failed to retrieve public_source_ip4: %r', e)
         return None
 
 
-def gather_outward_ip6():
+def gather_public_source_ip6():
     try:
         r = rs.get('https://ip6.messa.cz/')
         r.raise_for_status()
         return r.text.strip()
     except Exception as e:
         # log as just info, because some hosts have IPv6 not configured
-        logger.info('Failed to retrieve outward_ip6: %r', e)
+        logger.info('Failed to retrieve public_source_ip6: %r', e)
         return None
 
 
@@ -162,15 +165,30 @@ def gather_cpu():
         },
         'times': {},
         'stats': {
-            'ctx_switches': cs.ctx_switches,
-            'interrupts': cs.interrupts,
-            'soft_interrupts': cs.soft_interrupts,
-            'syscalls': cs.syscalls,
+            'ctx_switches': {
+                '__value': cs.ctx_switches,
+                '__counter': True,
+            },
+            'interrupts': {
+                '__value': cs.interrupts,
+                '__counter': True,
+            },
+            'soft_interrupts': {
+                '__value': cs.soft_interrupts,
+                '__counter': True,
+            },
+            'syscalls': {
+                '__value': cs.syscalls,
+                '__counter': True,
+            },
         },
     }
     for k in 'user', 'system', 'idle', 'iowait':
         try:
-            data['times'][k] = getattr(ct, k)
+            data['times'][k] = {
+                '__value': getattr(ct, k),
+                '__counter': True,
+            }
         except AttributeError:
             pass
     return data
@@ -188,16 +206,24 @@ def gather_volumes():
             'fstype': p.fstype,
             'opts': p.opts,
             'usage': {
-                'total_bytes': usage.total,
-                'used_bytes': usage.used,
+                'total_bytes': {
+                    '__value': usage.total,
+                    '__unit': 'bytes',
+                },
+                'used_bytes': {
+                    '__value': usage.used,
+                    '__unit': 'bytes',
+                },
                 'free_bytes': {
                     '__value': usage.free,
+                    '__unit': 'bytes',
                     '__check': {
                         'state': 'red' if usage.total >= free_bytes_red_threshold * 4 and usage.free < free_bytes_red_threshold else 'green',
                     },
                 },
                 'percent': {
                     '__value': usage.percent,
+                    '__unit': 'percents',
                     '__check': {
                         'state': 'red' if usage.percent >= percent_red_threshold else 'green',
                     },
@@ -210,19 +236,35 @@ def gather_volumes():
 def gather_memory():
     mem = psutil.virtual_memory()
     return {
-        'total_bytes': mem.total,
-        'available_bytes': mem.available,
+        'total_bytes': {
+            '__value': mem.total,
+            '__unit': 'bytes',
+        },
+        'available_bytes': {
+            '__value': mem.available,
+            '__unit': 'bytes',
+        },
     }
 
 
 def gather_swap():
     sw = psutil.swap_memory()
     return {
-        'total_bytes': sw.total,
-        'used_bytes': sw.used,
-        'free_bytes': sw.free,
+        'total_bytes': {
+            '__value': sw.total,
+            '__unit': 'bytes',
+        },
+        'used_bytes': {
+            '__value': sw.used,
+            '__unit': 'bytes',
+        },
+        'free_bytes': {
+            '__value': sw.free,
+            '__unit': 'bytes',
+        },
         'percent': {
             '__value': sw.percent,
+            '__unit': 'percents',
             '__check': {
                 'state': 'red' if sw.percent > 80 else 'green',
             },
