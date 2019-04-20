@@ -49,7 +49,7 @@ class NestedItem extends React.Component {
           <b
             style={{
               display: 'inline-block',
-              minWidth: 50,
+              minWidth: 60,
             }}
           >
             {nodeKey}
@@ -64,6 +64,8 @@ class NestedItem extends React.Component {
                   style={{
                     marginLeft: 5,
                     cursor: 'pointer',
+                    display: 'inline-block',
+                    minWidth: 40,
                   }}
                   onClick={this.onValueClick}
                 >
