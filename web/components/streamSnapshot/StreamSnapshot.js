@@ -81,6 +81,8 @@ export default createFragmentContainer(
           valueJSON
           checkJSON
           watchdogJSON
+          unit
+          isCounter
         }
       }
     `
