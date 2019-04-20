@@ -1,6 +1,12 @@
 import React from 'react'
 import Link from 'next/link'
 
+function postprocessJSON(json) {
+  json = json.replace(/,"/g, ', "')
+  json = json.replace(/([^\\])":/g, '$1": ')
+  return json
+}
+
 class StreamItemDetail extends React.Component {
 
   render() {
@@ -30,9 +36,10 @@ class StreamItemDetail extends React.Component {
             ))}
           </p>
 
-          {/*<pre className='debug'>
-            {JSON.stringify({ props: this.props }, null, 2)}
-          </pre>*/}
+          <p>
+            GraphQL item raw data:
+            <code>{postprocessJSON(JSON.stringify(item))}</code>
+          </p>
 
           <p>
 
@@ -76,9 +83,13 @@ class StreamItemDetail extends React.Component {
           .StreamItemDetail .path code {
             font-weight: 500;
           }
-          .StreamItemDetail p {
+          .StreamItemDetail p,
+          .StreamItemDetail pre {
             margin-top: 0.8rem;
             margin-bottom: 0.8rem;
+          }
+          .StreamItemDetail code {
+            white-space: pre-wrap;
           }
           .StreamItemDetail a.owButton {
             border: 1px solid hsl(0, 50%, 50%);
