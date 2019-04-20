@@ -1,5 +1,6 @@
 import asyncio
-from graphene import ObjectType, Field, Int, String, Schema, DateTime, List
+from graphene import Schema, ObjectType, Field, List
+from graphene import Int, String, DateTime, Boolean
 from graphene.relay import Node, Connection, ConnectionField
 from graphene.types.json import JSONString
 from logging import getLogger
@@ -109,6 +110,8 @@ class SnapshotItem (ObjectType):
     value_json = JSONString(name='valueJSON')
     check_json = JSONString(name='checkJSON')
     watchdog_json = JSONString(name='watchdogJSON')
+    is_counter = Boolean()
+    unit = String()
 
     def resolve_path(item, info):
         return item['path']
@@ -121,6 +124,14 @@ class SnapshotItem (ObjectType):
 
     def resolve_value_json(item, info):
         return item.get('value')
+
+    def resolve_unit(item, info):
+        return item.get('unit')
+
+    def resolve_is_counter(item, info):
+        if item.get('counter') == None:
+            return None
+        return bool(item['counter'])
 
     def resolve_check_json(item, info):
         return item.get('check')
