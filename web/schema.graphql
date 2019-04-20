@@ -43,6 +43,8 @@ type SnapshotItem {
   valueJSON: JSONString
   checkJSON: JSONString
   watchdogJSON: JSONString
+  isCounter: Boolean
+  unit: String
 }
 
 type Stream implements Node {

@@ -1,6 +1,7 @@
 import React from 'react'
 import FullWidth from '../ui/FullWidth'
 import StreamItemDetail from './StreamItemDetail'
+import SnapshotItemValue  from './SnapshotItemValue'
 
 function buildTree(flatItems) {
   const root = {
@@ -66,9 +67,7 @@ class NestedItem extends React.Component {
                   }}
                   onClick={this.onValueClick}
                 >
-                  <code style={{ fontSize: 12 }}>
-                    {item.valueJSON}
-                  </code>
+                  <SnapshotItemValue item={item} />
                 </span>
               )}
 
@@ -124,7 +123,7 @@ export default class NestedItems extends React.Component {
 
   render() {
     const { stateItems, streamId } = this.props
-    const nestedItemsRootNode = buildTree(stateItems)    
+    const nestedItemsRootNode = buildTree(stateItems)
     return (
       <div className='streamSnapshot-NestedItems'>
 
