@@ -13,11 +13,13 @@ def parse_state(state):
     assert isinstance(state, dict)
     for k, v in state.items():
         if isinstance(v, dict):
-            is_value_obj = '__value' in v or '__check' in v or '__watchdog' in v
-            if is_value_obj:
+            is_meta_obj = '__value' in v or '__check' in v or '__watchdog' in v
+            if is_meta_obj:
                 items.append({
                     'key': k,
                     'value': v.get('__value'),
+                    'unit': v.get('__unit'),
+                    'counter': v.get('__counter'),
                     'check': v.get('__check'),
                     'watchdog': v.get('__watchdog'),
                 })

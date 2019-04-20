@@ -74,7 +74,33 @@ def test_parse_complex_state_value():
     parsed = parse_state(state)
     assert yaml_dump(parsed) == dedent('''\
       - check: {state: green}
+        counter: null
         key: free_bytes
+        unit: null
+        value: 65315635200
+        watchdog: null
+    ''')
+
+
+def test_parse_complex_state_value_with_metadata():
+    state = '''
+        {
+            "user": {
+                "__value": 65315635200,
+                "__unit": "seconds",
+                "__counter": true,
+                "__check": {
+                    "state": "green"
+                }
+            }
+        }
+    '''
+    parsed = parse_state(state)
+    assert yaml_dump(parsed) == dedent('''\
+      - check: {state: green}
+        counter: true
+        key: user
+        unit: seconds
         value: 65315635200
         watchdog: null
     ''')
