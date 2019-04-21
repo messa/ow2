@@ -51,6 +51,8 @@ class SnapshotItem (ObjectType):
     watchdog_json = JSONString(name='watchdogJSON')
     is_counter = Boolean()
     unit = String()
+    stream = Field(lambda: Stream)
+    snapshot = Field(lambda: StreamSnapshot)
 
     def resolve_path(item, info):
         return item['path']
@@ -77,6 +79,18 @@ class SnapshotItem (ObjectType):
 
     def resolve_watchdog_json(item, info):
         return item.get('watchdog')
+
+    def resolve_stream(item, info):
+        raise Exception('NIY: SnapshotItem resolve_stream')
+
+    def resolve_snapshot(item, info):
+        raise Exception('NIY: SnapshotItem resolve_snapshot')
+
+
+class SnapshotItemConnection (Connection):
+
+    class Meta:
+        node = SnapshotItem
 
 
 class StreamSnapshot (ObjectType):
@@ -158,6 +172,7 @@ class Query (ObjectType):
     stream = Field(Stream, stream_id=String(required=True))
     streams = ConnectionField(StreamConnection)
     stream_snapshot = Field(StreamSnapshot, snapshot_id=String(required=True))
+    search_current_snapshot_items = Field(SnapshotItemConnection, path_query=String(required=True))
 
     async def resolve_stream(root, info, stream_id):
         model = get_model(info)
@@ -173,6 +188,16 @@ class Query (ObjectType):
         model = get_model(info)
         snapshot = await model.stream_snapshots.get_by_id(snapshot_id)
         return snapshot
+
+    async def resolve_search_current_snapshot_items(root, info, path_query):
+        model = get_model(info)
+        streams = await model.streams.list_all()
+        stream_ids = [s.id for s in streams]
+        snapshots = await model.strean_snapshots.get_by_ids(stream_ids)
+        found_items = []
+        for snapshot in snapshots:
+            found_items.extend(snapshot.search_items(path_query=path_query))
+        return found_items
 
 
 def get_model(info):
