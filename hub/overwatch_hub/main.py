@@ -10,7 +10,7 @@ import sys
 
 from .configuration import Configuration
 from .views import routes
-from .model import Model
+from .model import get_model
 from .graphql import graphql_schema
 
 
@@ -50,7 +50,7 @@ def setup_logging():
 
 async def async_main(conf):
     async with AsyncExitStack() as stack:
-        model = await stack.enter_async_context(Model(conf))
+        model = await stack.enter_async_context(get_model(conf))
         app = web.Application()
         app['model'] = model
         app.router.add_routes(routes)

@@ -1,4 +1,5 @@
 from bson import ObjectId
+from contextlib import asynccontextmanager
 from logging import getLogger
 
 from ..util import get_mongo_db_name, smart_repr, parse_datetime, to_compact_json
@@ -34,20 +35,31 @@ def get_mongo_db(mongo_conf):
     return db
 
 
+@asynccontextmanager
+async def get_model(conf):
+    db = get_mongo_db(conf.mongodb)
+    try:
+        async with Model(db) as model:
+            yield model
+    finally:
+        db.client.close()
+
+
 class Model:
 
-    def __init__(self, conf):
-        self.db = db = get_mongo_db(conf.mongodb)
+    def __init__(self, db, create_optional_indexes=True):
+        self.db = db
+        self._create_optional_indexes = create_optional_indexes
         self.streams = Streams(db)
         self.stream_snapshots = StreamSnapshots(db)
 
     async def __aenter__(self):
         await self.create_mandatory_indexes()
-        await self.create_optional_indexes()
+        if self._create_optional_indexes:
+            await self.create_optional_indexes()
         return self
 
     async def __aexit__(self, exc_type, exc, tb):
-        self.db.client.close()
         self.db = None
 
     async def create_mandatory_indexes(self):
