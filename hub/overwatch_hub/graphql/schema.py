@@ -280,6 +280,9 @@ class Query (ObjectType):
             for item in snapshot.state_items:
                 if re_pq.match(item.path_str):
                     found_items.append(item)
+            if len(found_items) >= 10000:
+                logger.debug('Too many found_items')
+                break
         logger.debug(
             'resolve_search_current_snapshot_items %r found %s items in %.3f s',
             path_query, len(found_items), monotime() - t)
