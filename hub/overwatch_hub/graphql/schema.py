@@ -55,7 +55,9 @@ class SnapshotItem (ObjectType):
     key = String()
     value_json = JSONString(name='valueJSON')
     check_json = JSONString(name='checkJSON')
+    check_state = String()
     watchdog_json = JSONString(name='watchdogJSON')
+    watchdog_expired = Boolean()
     is_counter = Boolean()
     unit = String()
     stream_id = String()
@@ -129,6 +131,8 @@ class StreamSnapshot (ObjectType):
     date = DateTime()
     state_json = String(name='stateJSON')
     state_items = List(SnapshotItem)
+    green_check_items = List(SnapshotItem)
+    red_check_items = List(SnapshotItem)
     green_check_count = Int()
     red_check_count = Int()
 
@@ -148,36 +152,32 @@ class StreamSnapshot (ObjectType):
         await snapshot.load_state()
         return snapshot.state_items
 
+    async def resolve_green_check_items(snapshot, info):
+        await snapshot.load_state()
+        return snapshot.green_check_items
+
+    async def resolve_red_check_items(snapshot, info):
+        await snapshot.load_state()
+        return snapshot.red_check_items
+
     async def resolve_green_check_count(snapshot, info):
         await snapshot.load_state()
         green_count = 0
-        for item in snapshot.state_items:
-            try:
-                if item.raw_check and (item.raw_check.get('state') or item.raw_check.get('color')) == 'green':
-                        green_count += 1
-            except Exception as e:
-                logger.exception('Failed to process item raw_check %r: %r', item.raw_check, e)
-            try:
-                if item.raw_watchdog and item.raw_watchdog['deadline'] > time() * 1000:
-                    green_count += 1
-            except Exception as e:
-                logger.exception('Failed to process item raw_watchdog %r: %r', item.raw_watchdog, e)
+        for item in snapshot.green_check_items:
+            if item.check_state == 'green':
+                green_count += 1
+            if item.watchdog_expired == False:
+                green_count += 1
         return green_count
 
     async def resolve_red_check_count(snapshot, info):
         await snapshot.load_state()
         red_count = 0
-        for item in snapshot.state_items:
-            try:
-                if item.raw_check and (item.raw_check.get('state') or item.raw_check.get('color')) == 'red':
-                    red_count += 1
-            except Exception as e:
-                logger.exception('Failed to process item raw_check %r: %r', item.raw_check, e)
-            try:
-                if item.raw_watchdog and item.raw_watchdog['deadline'] <= time() * 1000:
-                    red_count += 1
-            except Exception as e:
-                logger.exception('Failed to process item raw_watchdog %r: %r', item.raw_watchdog, e)
+        for item in snapshot.red_check_items:
+            if item.check_state == 'red':
+                red_count += 1
+            if item.watchdog_expired == True:
+                red_count += 1
         return red_count
 
 
