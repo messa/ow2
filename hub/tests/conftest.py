@@ -1,7 +1,10 @@
+from logging import DEBUG, basicConfig, getLogger
 import os
 from pathlib import Path
 from pytest import fixture
 
+
+logger = getLogger(__name__)
 
 here = Path(__file__).resolve().parent
 
@@ -50,3 +53,68 @@ async def model(db):
     from overwatch_hub.model import Model
     async with Model(db=db, create_optional_indexes=False) as model:
         yield model
+
+
+@fixture
+def graphql(model):
+    from graphql import graphql
+    from graphql.execution.base import ExecutionResult
+    from graphql.execution.executors.asyncio import AsyncioExecutor as GQLAIOExecutor
+    from overwatch_hub.graphql import graphql_schema
+
+    async def run_graphql_query(query):
+        getLogger(__name__).info('Running GraphQL query: %s', ' '.join(query.split()))
+        context = {
+            'model': model,
+        }
+        res = await graphql(
+            graphql_schema,
+            query,
+            context=context,
+            return_promise=True,
+            enable_async=True,
+            executor=GQLAIOExecutor())
+        assert isinstance(res, ExecutionResult)
+        assert not res.invalid
+        assert not res.errors
+        return _ordered_dict_to_dict(res.data)
+
+    return run_graphql_query
+
+
+def _ordered_dict_to_dict(obj):
+    if isinstance(obj, dict):
+        return {k: _ordered_dict_to_dict(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_ordered_dict_to_dict(v) for v in obj]
+    return obj
+
+
+@fixture
+def remove_ids():
+    from itertools import count
+
+    def _remove_ids(obj):
+        translations = {}
+        counter = count()
+
+        def translate(prefix, v):
+            if v not in translations:
+                translations[v] = f'{prefix}{next(counter):03d}'
+            return translations[v]
+
+        def r(obj):
+            if isinstance(obj, dict):
+                res = {}
+                for k, v in obj.items():
+                    if k == 'streamId' and isinstance(v, str):
+                        v = translate('streamId', v)
+                    res[k] = r(v)
+                return res
+            if isinstance(obj, list):
+                return [r(v) for v in obj]
+            return obj
+
+        return r(obj)
+
+    return _remove_ids

@@ -201,7 +201,10 @@ class Query (ObjectType):
 
 
 def get_model(info):
-    return info.context['request'].app['model']
+    if info.context.get('request'):
+        return info.context['request'].app['model']
+    return info.context['model']
+
 
 
 graphql_schema = Schema(query=Query)
