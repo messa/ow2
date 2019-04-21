@@ -6,12 +6,14 @@ from logging import getLogger
 from pymongo import ASCENDING as ASC
 from pymongo import DESCENDING as DESC
 from pytz import utc
+from time import time
 
 from ..util import to_compact_json
 from .helpers import to_objectid, parse_state, flatten_state_items_tree
 
 
 logger = getLogger(__name__)
+
 
 
 def to_utc(dt):
@@ -186,6 +188,22 @@ class StreamSnapshot:
             ]
         return self._state_items
 
+    @property
+    def green_check_items(self):
+        return [
+            item for item in self.state_items
+            if item.check_state == 'green'
+            or item.watchdog_expired == False
+        ]
+
+    @property
+    def red_check_items(self):
+        return [
+            item for item in self.state_items
+            if item.check_state == 'red'
+            or item.watchdog_expired == True
+        ]
+
     def __repr__(self):
         return f'<{self.__class__.__name__} {self.id}>'
 
@@ -215,8 +233,6 @@ SnapshotItemBase = namedtuple('SnapshotItemBase', '''
 
 class SnapshotItem (SnapshotItemBase):
 
-    __slots__ = ()
-
     @property
     def key(self):
         return self.path[-1]
@@ -228,3 +244,15 @@ class SnapshotItem (SnapshotItemBase):
     @property
     def path_str(self):
         return ' > '.join(self.path)
+
+    @property
+    def check_state(self):
+        if not self.raw_check:
+            return None
+        return self.raw_check.get('state') or self.raw_check.get('color')
+
+    @property
+    def watchdog_expired(self):
+        if not self.raw_watchdog:
+            return None
+        return self.raw_watchdog['deadline'] <= time() * 1000

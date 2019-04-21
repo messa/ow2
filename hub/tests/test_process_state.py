@@ -81,7 +81,9 @@ async def test_graphql_streams(model, sample_snapshot_loaded, graphql, remove_id
                                 key
                                 valueJSON
                                 checkJSON
+                                checkState
                                 watchdogJSON
+                                watchdogExpired
                                 unit
                                 isCounter
                                 streamId
@@ -107,6 +109,7 @@ async def test_graphql_streams(model, sample_snapshot_loaded, graphql, remove_id
                 snapshotId: snapshotId001
                 stateItems:
                 - checkJSON: null
+                  checkState: null
                   isCounter: false
                   key: load
                   path: [load]
@@ -114,8 +117,10 @@ async def test_graphql_streams(model, sample_snapshot_loaded, graphql, remove_id
                   streamId: streamId000
                   unit: null
                   valueJSON: '1.2'
+                  watchdogExpired: null
                   watchdogJSON: null
                 - checkJSON: null
+                  checkState: null
                   isCounter: false
                   key: uptime
                   path: [uptime]
@@ -123,8 +128,10 @@ async def test_graphql_streams(model, sample_snapshot_loaded, graphql, remove_id
                   streamId: streamId000
                   unit: seconds
                   valueJSON: '3600'
+                  watchdogExpired: null
                   watchdogJSON: null
                 - checkJSON: '{"color": "green"}'
+                  checkState: green
                   isCounter: false
                   key: disk_free
                   path: [disk_free]
@@ -132,8 +139,10 @@ async def test_graphql_streams(model, sample_snapshot_loaded, graphql, remove_id
                   streamId: streamId000
                   unit: bytes
                   valueJSON: '10000000'
+                  watchdogExpired: null
                   watchdogJSON: null
                 - checkJSON: null
+                  checkState: null
                   isCounter: false
                   key: watchdog
                   path: [watchdog]
@@ -141,6 +150,7 @@ async def test_graphql_streams(model, sample_snapshot_loaded, graphql, remove_id
                   streamId: streamId000
                   unit: null
                   valueJSON: null
+                  watchdogExpired: true
                   watchdogJSON: '{"deadline": 1554079810123}'
                 streamId: streamId000
               lastSnapshotDate: '2019-04-01T00:30:00+00:00'
