@@ -59,7 +59,6 @@ class StreamSnapshots:
         return self._stream_snapshot(doc_snapshot=doc)
 
     async def get_by_id(self, snapshot_id):
-        assert isinstance(snapshot_id, str)
         doc = await self._c_snapshots.find_one({'_id': to_objectid(snapshot_id)})
         return self._stream_snapshot(doc_snapshot=doc)
 
@@ -181,6 +180,7 @@ class StreamSnapshot:
                 snapshot_item_from_raw(
                     raw_item,
                     snapshot_id=self.id,
+                    snapshot_date=self.date,
                     stream_id=self.stream_id)
                 for raw_item in self.raw_state_items
             ]
@@ -190,7 +190,7 @@ class StreamSnapshot:
         return f'<{self.__class__.__name__} {self.id}>'
 
 
-def snapshot_item_from_raw(raw_item, snapshot_id, stream_id):
+def snapshot_item_from_raw(raw_item, snapshot_id, snapshot_date, stream_id):
     assert isinstance(raw_item, dict)
     assert isinstance(snapshot_id, ObjectId)
     assert raw_item['key'] == raw_item['path'][-1]
@@ -202,13 +202,14 @@ def snapshot_item_from_raw(raw_item, snapshot_id, stream_id):
         raw_check=raw_item.get('check'),
         raw_watchdog=raw_item.get('watchdog'),
         snapshot_id=snapshot_id,
+        snapshot_date=snapshot_date,
         stream_id=stream_id,
     )
 
 
 SnapshotItemBase = namedtuple('SnapshotItemBase', '''
     path value unit raw_counter raw_check raw_watchdog
-    snapshot_id stream_id
+    snapshot_id snapshot_date stream_id
 ''')
 
 

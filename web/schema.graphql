@@ -51,6 +51,7 @@ type SnapshotItem implements Node {
   streamId: String
   stream: Stream
   snapshotId: String
+  snapshotDate: DateTime
   snapshot: StreamSnapshot
 }
 
@@ -75,6 +76,7 @@ type Stream implements Node {
   lastSnapshot: StreamSnapshot
   lastSnapshotDate: DateTime
   snapshots(before: String, after: String, first: Int, last: Int): StreamSnapshotMetadataConnection
+  itemHistory(path: [String]!, before: String, after: String, first: Int, last: Int): SnapshotItemConnection
 }
 
 type StreamConnection {

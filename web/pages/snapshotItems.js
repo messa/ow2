@@ -51,11 +51,11 @@ export default withData(
   SnapshotItemsPage,
   {
     variables: ({ query }, { itemPathQuery }) => ({
-      itemPathQuery
+      itemPathQuery,
     }),
     query: graphql`
       query snapshotItemsQuery(
-        $itemPathQuery: String!
+        $itemPathQuery: String!,
       ) {
         foundItems: searchCurrentSnapshotItems(
           pathQuery: $itemPathQuery
