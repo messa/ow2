@@ -2,7 +2,7 @@ venv_dir=venv
 python3=python3
 
 check: $(venv_dir)/packages-installed
-	$(venv_dir)/bin/python3 -m pytest -vv --tb=native $(pytest_args) tests
+	$(venv_dir)/bin/python3 -m pytest -vvv --tb=native --no-print-logs --pythonwarnings=ignore $(pytest_args) tests
 
 run: $(venv_dir)/packages-installed
 	$(venv_dir)/bin/overwatch-hub --conf sample_conf.yaml
