@@ -58,12 +58,43 @@ class StreamList extends React.Component {
                     <code>{stream.streamId}</code>
                   </a></Link>
                 </td>
-                <td><LabelFromJSON labelJSON={stream.labelJSON} /></td>
+                <td>
+                  <LabelFromJSON labelJSON={stream.labelJSON} />
+
+                  {' '}&nbsp;{' '}
+
+                  {!stream.lastSnapshot.greenCheckCount || (
+                    <span className='greenCheckCount'>{JSON.stringify(stream.lastSnapshot.greenCheckCount)}</span>
+                  )}
+                  {!stream.lastSnapshot.redCheckCount || (
+                    <span className='redCheckCount'>{stream.lastSnapshot.redCheckCount}</span>
+                  )}
+                </td>
+
                 <td><DateTime key={this.state.refetchCount} value={stream.lastSnapshotDate} /></td>
               </tr>
             ))}
           </tbody>
         </table>
+
+        <style jsx>{`
+          .greenCheckCount,
+          .redCheckCount {
+            margin-left: 4px;
+            font-weight: 600;
+            color: #fff;
+            display: inline-block;
+            min-width: 16px;
+            text-align: center;
+            border-radius: 8px;
+          }
+          .greenCheckCount {
+            background-color: #0c0;
+          }
+          .redCheckCount {
+            background-color: #d00;
+          }
+        `}</style>
       </div>
     )
   }
@@ -82,6 +113,10 @@ export default createRefetchContainer(
               streamId
               labelJSON
               lastSnapshotDate
+              lastSnapshot {
+                greenCheckCount
+                redCheckCount
+              }
             }
           }
         }

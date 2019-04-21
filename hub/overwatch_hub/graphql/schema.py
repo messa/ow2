@@ -5,6 +5,8 @@ from graphene.relay import Node, Connection, ConnectionField
 from graphene.types.json import JSONString
 from logging import getLogger
 import re
+from simplejson import loads as json_loads
+from time import time
 from time import monotonic as monotime
 
 from .helpers import Obj, json_dumps
@@ -123,10 +125,12 @@ class StreamSnapshot (ObjectType):
 
     snapshot_id = String(name='snapshotId')
     stream_id = String(name='streamId')
+    stream = Field(lambda: Stream)
     date = DateTime()
     state_json = String(name='stateJSON')
     state_items = List(SnapshotItem)
-    stream = Field(lambda: Stream)
+    green_check_count = Int()
+    red_check_count = Int()
 
     def resolve_snapshot_id(snapshot, info):
         return snapshot.id
@@ -143,6 +147,38 @@ class StreamSnapshot (ObjectType):
     async def resolve_state_items(snapshot, info):
         await snapshot.load_state()
         return snapshot.state_items
+
+    async def resolve_green_check_count(snapshot, info):
+        await snapshot.load_state()
+        green_count = 0
+        for item in snapshot.state_items:
+            try:
+                if item.raw_check and (item.raw_check.get('state') or item.raw_check.get('color')) == 'green':
+                        green_count += 1
+            except Exception as e:
+                logger.exception('Failed to process item raw_check %r: %r', item.raw_check, e)
+            try:
+                if item.raw_watchdog and item.raw_watchdog['deadline'] > time() * 1000:
+                    green_count += 1
+            except Exception as e:
+                logger.exception('Failed to process item raw_watchdog %r: %r', item.raw_watchdog, e)
+        return green_count
+
+    async def resolve_red_check_count(snapshot, info):
+        await snapshot.load_state()
+        red_count = 0
+        for item in snapshot.state_items:
+            try:
+                if item.raw_check and (item.raw_check.get('state') or item.raw_check.get('color')) == 'red':
+                    red_count += 1
+            except Exception as e:
+                logger.exception('Failed to process item raw_check %r: %r', item.raw_check, e)
+            try:
+                if item.raw_watchdog and item.raw_watchdog['deadline'] <= time() * 1000:
+                    red_count += 1
+            except Exception as e:
+                logger.exception('Failed to process item raw_watchdog %r: %r', item.raw_watchdog, e)
+        return red_count
 
 
 class Stream (ObjectType):

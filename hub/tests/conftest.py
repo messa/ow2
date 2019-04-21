@@ -75,7 +75,7 @@ def graphql(model):
             enable_async=True,
             executor=GQLAIOExecutor())
         assert isinstance(res, ExecutionResult)
-        assert not res.invalid
+        assert not res.invalid, repr(res.to_dict())
         assert not res.errors
         return _ordered_dict_to_dict(res.data)
 
