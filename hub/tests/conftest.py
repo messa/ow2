@@ -103,12 +103,14 @@ def remove_ids():
                 translations[v] = f'{prefix}{next(counter):03d}'
             return translations[v]
 
+        id_keys = 'streamId snapshotId'.split()
+
         def r(obj):
             if isinstance(obj, dict):
                 res = {}
                 for k, v in obj.items():
-                    if k == 'streamId' and isinstance(v, str):
-                        v = translate('streamId', v)
+                    if k in id_keys and isinstance(v, str):
+                        v = translate(k, v)
                     res[k] = r(v)
                 return res
             if isinstance(obj, list):

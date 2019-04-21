@@ -70,8 +70,17 @@ async def test_graphql_streams(model, sample_snapshot_loaded, graphql, remove_id
                         labelJSON
                         lastSnapshotDate
                         lastSnapshot {
+                            snapshotId
                             streamId
                             date
+                            stateItems {
+                                path
+                                valueJSON
+                                checkJSON
+                                watchdogJSON
+                                unit
+                                isCounter
+                            }
                         }
                     }
                 }
@@ -85,7 +94,35 @@ async def test_graphql_streams(model, sample_snapshot_loaded, graphql, remove_id
           edges:
           - node:
               labelJSON: '{"agent":"system","host":"example.com"}'
-              lastSnapshot: {date: '2019-04-01T00:30:00+00:00', streamId: streamId000}
+              lastSnapshot:
+                date: '2019-04-01T00:30:00+00:00'
+                snapshotId: snapshotId001
+                stateItems:
+                - checkJSON: null
+                  isCounter: null
+                  path: [load]
+                  unit: null
+                  valueJSON: '1.2'
+                  watchdogJSON: null
+                - checkJSON: null
+                  isCounter: null
+                  path: [uptime]
+                  unit: seconds
+                  valueJSON: '3600'
+                  watchdogJSON: null
+                - checkJSON: '{"color": "green"}'
+                  isCounter: null
+                  path: [disk_free]
+                  unit: bytes
+                  valueJSON: '10000000'
+                  watchdogJSON: null
+                - checkJSON: null
+                  isCounter: null
+                  path: [watchdog]
+                  unit: null
+                  valueJSON: null
+                  watchdogJSON: '{"deadline": 1554079810123}'
+                streamId: streamId000
               lastSnapshotDate: '2019-04-01T00:30:00+00:00'
               streamId: streamId000
     ''')
