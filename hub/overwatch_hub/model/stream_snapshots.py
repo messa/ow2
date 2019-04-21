@@ -1,5 +1,6 @@
 from asyncio import shield
 from bson import ObjectId
+from collections import namedtuple
 from datetime import datetime
 from logging import getLogger
 from pymongo import ASCENDING as ASC
@@ -7,7 +8,7 @@ from pymongo import DESCENDING as DESC
 from pytz import utc
 
 from ..util import to_compact_json
-from .helpers import to_objectid, parse_state, flatten_nested_state_items
+from .helpers import to_objectid, parse_state, flatten_state_items_tree
 
 
 logger = getLogger(__name__)
@@ -124,8 +125,8 @@ class StreamSnapshotMetadata:
 class StreamSnapshot:
 
     __slots__ = (
-        'id', 'date', 'stream_id',
-        'state_json', '_state_nested_items', '_state_flat_items',
+        'id', 'date', 'stream_id', 'state_json',
+        '_raw_state_items_tree', '_raw_state_items', '_state_items',
     )
 
     def __init__(self, doc_snapshot, doc_state):
@@ -134,20 +135,68 @@ class StreamSnapshot:
         self.date = to_utc(doc_snapshot['date'])
         self.stream_id = doc_snapshot['stream_id']
         self.state_json = doc_snapshot.get('state_json') or doc_state['state_json']
-        self._state_nested_items = None
-        self._state_flat_items = None
+        self._raw_state_items_tree = None
+        self._raw_state_items = None
+        self._state_items = None
 
     @property
-    def state_items_nested(self):
-        if self._state_nested_items is None:
-            self._state_nested_items = parse_state(self.state_json)
-        return self._state_nested_items
+    def raw_state_items_tree(self):
+        if self._raw_state_items_tree is None:
+            self._raw_state_items_tree = parse_state(self.state_json)
+        return self._raw_state_items_tree
 
     @property
-    def state_items_flat(self):
-        if self._state_flat_items is None:
-            self._state_flat_items = flatten_nested_state_items(self.state_items_nested)
-        return self._state_flat_items
+    def raw_state_items(self):
+        if self._raw_state_items is None:
+            self._raw_state_items = flatten_state_items_tree(self.raw_state_items_tree)
+        return self._raw_state_items
+
+    @property
+    def state_items(self):
+        if self._state_items is None:
+            self._state_items = [
+                snapshot_item_from_raw(
+                    raw_item,
+                    snapshot_id=self.id,
+                    stream_id=self.stream_id)
+                for raw_item in self.raw_state_items
+            ]
+        return self._state_items
 
     def __repr__(self):
         return f'<{self.__class__.__name__} {self.id}>'
+
+
+def snapshot_item_from_raw(raw_item, snapshot_id, stream_id):
+    assert isinstance(raw_item, dict)
+    assert isinstance(snapshot_id, ObjectId)
+    assert raw_item['key'] == raw_item['path'][-1]
+    return SnapshotItem(
+        path=raw_item['path'],
+        value=raw_item['value'],
+        unit=raw_item.get('unit'),
+        raw_counter=raw_item.get('counter'),
+        raw_check=raw_item.get('check'),
+        raw_watchdog=raw_item.get('watchdog'),
+        snapshot_id=snapshot_id,
+        stream_id=stream_id,
+    )
+
+
+SnapshotItemBase = namedtuple('SnapshotItemBase', '''
+    path value unit raw_counter raw_check raw_watchdog
+    snapshot_id stream_id
+''')
+
+
+class SnapshotItem (SnapshotItemBase):
+
+    __slots__ = ()
+
+    @property
+    def key(self):
+        return self.path[-1]
+
+    @property
+    def is_counter(self):
+        return bool(self.raw_counter)

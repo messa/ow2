@@ -75,11 +75,14 @@ async def test_graphql_streams(model, sample_snapshot_loaded, graphql, remove_id
                             date
                             stateItems {
                                 path
+                                key
                                 valueJSON
                                 checkJSON
                                 watchdogJSON
                                 unit
                                 isCounter
+                                streamId
+                                snapshotId
                             }
                         }
                     }
@@ -99,26 +102,38 @@ async def test_graphql_streams(model, sample_snapshot_loaded, graphql, remove_id
                 snapshotId: snapshotId001
                 stateItems:
                 - checkJSON: null
-                  isCounter: null
+                  isCounter: false
+                  key: load
                   path: [load]
+                  snapshotId: snapshotId001
+                  streamId: streamId000
                   unit: null
                   valueJSON: '1.2'
                   watchdogJSON: null
                 - checkJSON: null
-                  isCounter: null
+                  isCounter: false
+                  key: uptime
                   path: [uptime]
+                  snapshotId: snapshotId001
+                  streamId: streamId000
                   unit: seconds
                   valueJSON: '3600'
                   watchdogJSON: null
                 - checkJSON: '{"color": "green"}'
-                  isCounter: null
+                  isCounter: false
+                  key: disk_free
                   path: [disk_free]
+                  snapshotId: snapshotId001
+                  streamId: streamId000
                   unit: bytes
                   valueJSON: '10000000'
                   watchdogJSON: null
                 - checkJSON: null
-                  isCounter: null
+                  isCounter: false
+                  key: watchdog
                   path: [watchdog]
+                  snapshotId: snapshotId001
+                  streamId: streamId000
                   unit: null
                   valueJSON: null
                   watchdogJSON: '{"deadline": 1554079810123}'
