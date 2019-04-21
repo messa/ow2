@@ -59,11 +59,11 @@ class SnapshotItem (ObjectType):
     stream_id = String()
     stream = Field(lambda: Stream)
     snapshot_id = String()
+    snapshot_date = DateTime()
     snapshot = Field(lambda: StreamSnapshot)
 
     def resolve_id(item, info):
-        from random import random
-        return str(random())
+        return f'{item.snapshot_id}:{item.path_str}'
 
     def resolve_path(item, info):
         return item.path
@@ -94,7 +94,12 @@ class SnapshotItem (ObjectType):
         return await model.streams.get_by_id(item.stream_id)
 
     def resolve_snapshot_id(item, info):
+        assert item.snapshot_id
         return item.snapshot_id
+
+    def resolve_snapshot_date(item, info):
+        assert item.snapshot_date
+        return item.snapshot_date
 
     async def resolve_snapshot(item, info):
         model = get_model(info)
@@ -154,6 +159,7 @@ class Stream (ObjectType):
     last_snapshot = Field(StreamSnapshot, name='lastSnapshot')
     last_snapshot_date = DateTime(name='lastSnapshotDate')
     snapshots = ConnectionField(StreamSnapshotMetadataConnection)
+    item_history = ConnectionField(SnapshotItemConnection, path=List(String, required=True))
 
     def resolve_stream_id(stream, info):
         return stream.id
@@ -175,6 +181,25 @@ class Stream (ObjectType):
         model = get_model(info)
         snapshots = await model.stream_snapshots.list_by_stream_id(stream_id=stream.id)
         return snapshots
+
+    async def resolve_item_history(stream, info, path):
+        model = get_model(info)
+        snapshots = await model.stream_snapshots.list_by_stream_id(stream_id=stream.id)
+        logger.debug('Found %d snapshots for stream %s', len(snapshots), stream.id)
+        snapshots = snapshots[:1000]
+        path_str = ' > '.join(path)
+        sem = asyncio.Semaphore(16)
+        async def _get_hist(snapshot):
+            async with sem:
+                await snapshot.load_state()
+                for item in snapshot.state_items:
+                    if item.path_str == path_str:
+                        return item
+                return None
+        t = monotime()
+        items = await asyncio.gather(*[_get_hist(sn) for sn in snapshots])
+        logger.debug('Searched %s stream snapshot states in %.3f s', len(snapshots), monotime() - t)
+        return items
 
 
 class StreamConnection (Connection):
