@@ -45,7 +45,9 @@ type SnapshotItem implements Node {
   key: String
   valueJSON: JSONString
   checkJSON: JSONString
+  checkState: String
   watchdogJSON: JSONString
+  watchdogExpired: Boolean
   isCounter: Boolean
   unit: String
   streamId: String
@@ -101,6 +103,8 @@ type StreamSnapshot implements Node {
   date: DateTime
   stateJSON: String
   stateItems: [SnapshotItem]
+  greenCheckItems: [SnapshotItem]
+  redCheckItems: [SnapshotItem]
   greenCheckCount: Int
   redCheckCount: Int
 }

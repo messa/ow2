@@ -47,6 +47,7 @@ class StreamList extends React.Component {
             <tr>
               <th>Stream Id</th>
               <th>Label</th>
+              <th>Checks</th>
               <th>Last updated</th>
             </tr>
           </thead>
@@ -60,9 +61,8 @@ class StreamList extends React.Component {
                 </td>
                 <td>
                   <LabelFromJSON labelJSON={stream.labelJSON} />
-
-                  {' '}&nbsp;{' '}
-
+                </td>
+                <td>
                   {!stream.lastSnapshot.greenCheckCount || (
                     <span className='greenCheckCount'>{JSON.stringify(stream.lastSnapshot.greenCheckCount)}</span>
                   )}
@@ -80,13 +80,17 @@ class StreamList extends React.Component {
         <style jsx>{`
           .greenCheckCount,
           .redCheckCount {
-            margin-left: 4px;
+            margin-left: 5px;
             font-weight: 600;
             color: #fff;
             display: inline-block;
             min-width: 16px;
             text-align: center;
             border-radius: 8px;
+          }
+          .greenCheckCount:first-child,
+          .redCheckCount:first-child {
+            margin-left: 0;
           }
           .greenCheckCount {
             background-color: #0c0;
