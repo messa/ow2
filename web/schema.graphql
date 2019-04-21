@@ -97,10 +97,12 @@ type StreamSnapshot implements Node {
   id: ID!
   snapshotId: String
   streamId: String
+  stream: Stream
   date: DateTime
   stateJSON: String
   stateItems: [SnapshotItem]
-  stream: Stream
+  greenCheckCount: Int
+  redCheckCount: Int
 }
 
 type StreamSnapshotMetadata implements Node {

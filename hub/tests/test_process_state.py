@@ -74,6 +74,8 @@ async def test_graphql_streams(model, sample_snapshot_loaded, graphql, remove_id
                             snapshotId
                             streamId
                             date
+                            greenCheckCount
+                            redCheckCount
                             stateItems {
                                 path
                                 key
@@ -100,6 +102,8 @@ async def test_graphql_streams(model, sample_snapshot_loaded, graphql, remove_id
               labelJSON: '{"agent":"system","host":"example.com"}'
               lastSnapshot:
                 date: '2019-04-01T00:30:00+00:00'
+                greenCheckCount: 1
+                redCheckCount: 1
                 snapshotId: snapshotId001
                 stateItems:
                 - checkJSON: null
