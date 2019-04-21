@@ -1,4 +1,5 @@
 import React from 'react'
+import Link from 'next/link'
 import { withRouter } from 'next/router'
 import { graphql } from 'react-relay'
 import withData from '../lib/withData'
@@ -10,6 +11,7 @@ import SnapshotHistory from '../components/SnapshotHistory'
 import LabelFromJSON from '../components/util/LabelFromJSON'
 import DateTime from '../components/util/DateTime'
 import StreamSnapshot from '../components/streamSnapshot/StreamSnapshot'
+import SnapshotItemValue from '../components/streamSnapshot/SnapshotItemValue'
 
 class SnapshotItemHistoryPage extends React.Component {
 
@@ -31,12 +33,20 @@ class SnapshotItemHistoryPage extends React.Component {
           <h1>Snapshot item history</h1>
 
           <p>
-            Stream: <code>{streamId}</code>
+            Stream:
+
+            <Link href={{ pathname: '/stream', query: { id: stream.streamId } }}><a>
+              <code>{stream.streamId}</code>
+            </a></Link>
+
+            &nbsp; &nbsp;
+
+            <LabelFromJSON labelJSON={stream.labelJSON} />
           </p>
 
           <p>
             Path:
-            <code>{itemPath.join(' > ')}</code>
+            <code style={{ fontSize: 14 }}>{itemPath.join(' > ')}</code>
           </p>
 
           <table>
@@ -51,7 +61,7 @@ class SnapshotItemHistoryPage extends React.Component {
               {records.map((record) => (
                 <tr key={record.id}>
                   <td><DateTime value={record.snapshotDate} /></td>
-                  <td><code>{record.valueJSON}</code></td>
+                  <td><SnapshotItemValue item={record} /></td>
                   <td><code>{record.snapshotId}</code></td>
                 </tr>
               ))}
@@ -86,6 +96,7 @@ export default withData(
               node {
                 id
                 valueJSON
+                unit
                 snapshotId
                 snapshotDate
               }

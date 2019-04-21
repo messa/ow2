@@ -47,7 +47,10 @@ export default class DateTime extends React.Component {
     return (
       <span className='DateTime' title={dt.toISOString()}>
         {dt.toISOString().slice(0, 19).replace('T', ' ')}
-        {ago && <small style={{ marginLeft: 6 }}>(<b>{ago}</b> ago)</small>}
+        {ago ? (
+          <small style={{ marginLeft: 6 }}>(<b>{ago}</b> ago)</small>) : (
+            <>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</>
+          )}
       </span>
     )
   }
