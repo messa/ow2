@@ -34,17 +34,38 @@ type Query {
   stream(streamId: String!): Stream
   streams(before: String, after: String, first: Int, last: Int): StreamConnection
   streamSnapshot(snapshotId: String!): StreamSnapshot
+  searchCurrentSnapshotItems(pathQuery: String!): SnapshotItemConnection
 }
 
-type SnapshotItem {
+type SnapshotItem implements Node {
+  """The ID of the object."""
+  id: ID!
   path: [String]
   pathStr: String
   key: String
   valueJSON: JSONString
+  currentValueJSON: JSONString
   checkJSON: JSONString
   watchdogJSON: JSONString
   isCounter: Boolean
   unit: String
+  streamId: String
+  stream: Stream
+  snapshotId: String
+  snapshot: StreamSnapshot
+}
+
+type SnapshotItemConnection {
+  pageInfo: PageInfo!
+  edges: [SnapshotItemEdge]!
+}
+
+type SnapshotItemEdge {
+  """The item at the end of the edge"""
+  node: SnapshotItem
+
+  """A cursor for use in pagination"""
+  cursor: String!
 }
 
 type Stream implements Node {

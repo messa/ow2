@@ -43,22 +43,32 @@ class StreamSnapshotMetadataConnection (Connection):
 
 class SnapshotItem (ObjectType):
 
+    class Meta:
+        interfaces = (Node, )
+
     path = List(String)
     path_str = String(name='pathStr')
     key = String()
     value_json = JSONString(name='valueJSON')
+    current_value_json = JSONString(name='currentValueJSON')
     check_json = JSONString(name='checkJSON')
     watchdog_json = JSONString(name='watchdogJSON')
     is_counter = Boolean()
     unit = String()
+    stream_id = String()
     stream = Field(lambda: Stream)
+    snapshot_id = String()
     snapshot = Field(lambda: StreamSnapshot)
+
+    def resolve_id(item, info):
+        from random import random
+        return str(random())
 
     def resolve_path(item, info):
         return item['path']
 
     def resolve_path_str(item, info):
-        return ' :: '.join(item['path'])
+        return ' > '.join(item['path'])
 
     def resolve_key(item, info):
         return item['key']
@@ -119,6 +129,7 @@ class StreamSnapshot (ObjectType):
         return stream
 
     def resolve_state_items(snapshot, info):
+        logger.debug('StreamSnapshot %r resolve_state_items -> %r', snapshot, snapshot.state_items_flat)
         return snapshot.state_items_flat
 
 
@@ -201,10 +212,9 @@ class Query (ObjectType):
 
 
 def get_model(info):
-    if info.context.get('request'):
+    if 'request' in info.context:
         return info.context['request'].app['model']
     return info.context['model']
-
 
 
 graphql_schema = Schema(query=Query)
