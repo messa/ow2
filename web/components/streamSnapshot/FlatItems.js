@@ -6,6 +6,9 @@ export default class FlatItems extends React.Component {
     const { stateItems } = this.props
     return (
       <div className='streamSnapshot-FlatItems'>
+
+        <pre>{JSON.stringify({ stateItems }, null, 2)}</pre>
+
         {stateItems && stateItems.map((item, i) => (
           <div key={i} className='flatStateItem' style={{ padding: '1px 6px' }}>
 
