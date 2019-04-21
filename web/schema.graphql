@@ -34,7 +34,7 @@ type Query {
   stream(streamId: String!): Stream
   streams(before: String, after: String, first: Int, last: Int): StreamConnection
   streamSnapshot(snapshotId: String!): StreamSnapshot
-  searchCurrentSnapshotItems(pathQuery: String!): SnapshotItemConnection
+  searchCurrentSnapshotItems(pathQuery: String!, before: String, after: String, first: Int, last: Int): SnapshotItemConnection
 }
 
 type SnapshotItem implements Node {
@@ -44,7 +44,6 @@ type SnapshotItem implements Node {
   pathStr: String
   key: String
   valueJSON: JSONString
-  currentValueJSON: JSONString
   checkJSON: JSONString
   watchdogJSON: JSONString
   isCounter: Boolean

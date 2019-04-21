@@ -4,6 +4,8 @@ from graphene import Int, String, DateTime, Boolean
 from graphene.relay import Node, Connection, ConnectionField
 from graphene.types.json import JSONString
 from logging import getLogger
+import re
+from time import monotonic as monotime
 
 from .helpers import Obj, json_dumps
 
@@ -50,7 +52,6 @@ class SnapshotItem (ObjectType):
     path_str = String(name='pathStr')
     key = String()
     value_json = JSONString(name='valueJSON')
-    current_value_json = JSONString(name='currentValueJSON')
     check_json = JSONString(name='checkJSON')
     watchdog_json = JSONString(name='watchdogJSON')
     is_counter = Boolean()
@@ -89,13 +90,15 @@ class SnapshotItem (ObjectType):
         return item.stream_id
 
     async def resolve_stream(item, info):
-        raise Exception('NIY: SnapshotItem resolve_stream')
+        model = get_model(info)
+        return await model.streams.get_by_id(item.stream_id)
 
     def resolve_snapshot_id(item, info):
         return item.snapshot_id
 
     async def resolve_snapshot(item, info):
-        raise Exception('NIY: SnapshotItem resolve_snapshot')
+        model = get_model(info)
+        return await model.stream_snapshots.get_by_id(item.snapshot_id)
 
 
 class SnapshotItemConnection (Connection):
@@ -187,7 +190,7 @@ class Query (ObjectType):
     stream = Field(Stream, stream_id=String(required=True))
     streams = ConnectionField(StreamConnection)
     stream_snapshot = Field(StreamSnapshot, snapshot_id=String(required=True))
-    search_current_snapshot_items = Field(SnapshotItemConnection, path_query=String(required=True))
+    search_current_snapshot_items = ConnectionField(SnapshotItemConnection, path_query=String(required=True))
 
     async def resolve_stream(root, info, stream_id):
         model = get_model(info)
@@ -206,12 +209,19 @@ class Query (ObjectType):
 
     async def resolve_search_current_snapshot_items(root, info, path_query):
         model = get_model(info)
+        t = monotime()
         streams = await model.streams.list_all()
-        stream_ids = [s.id for s in streams]
-        snapshots = await model.strean_snapshots.get_by_ids(stream_ids)
+        snapshot_ids = [s.last_snapshot_id for s in streams]
+        snapshots = await model.stream_snapshots.get_by_ids(snapshot_ids, load_state=True)
+        re_pq = re.compile(path_query)
         found_items = []
         for snapshot in snapshots:
-            found_items.extend(snapshot.search_items(path_query=path_query))
+            for item in snapshot.state_items:
+                if re_pq.match(item.path_str):
+                    found_items.append(item)
+        logger.debug(
+            'resolve_search_current_snapshot_items %r found %s items in %.3f s',
+            path_query, len(found_items), monotime() - t)
         return found_items
 
 

@@ -16,27 +16,30 @@ const escapeRegex = v => v // TODO :)
 class SnapshotItemsPage extends React.Component {
 
   static async getInitialProps({ query }) {
-    let pathQuery = query['path']
-    if (!pathQuery && query['pathJSON']) {
-      const pathArray = JSON.parse(query['pathJSON'])
+    let itemPathQuery = query['itemPath']
+    if (!itemPathQuery && query['itemPathJSON']) {
+      const pathArray = JSON.parse(query['itemPathJSON'])
       const pathStr = pathArray.join(' > ')
-      pathQuery = escapeRegex(pathStr)
+      itemPathQuery = escapeRegex(pathStr)
     }
     return {
-      pathQuery,
+      itemPathQuery,
     }
   }
 
   render() {
-    const { pathQuery } = this.props
+    const { itemPathQuery, foundItems } = this.props
     return (
       <Layout activeItem='streams'>
         <Container>
           <h1>Snapshot item search</h1>
           <p>
             Path query:
-            <code>{pathQuery}</code>
+            <code>{itemPathQuery}</code>
           </p>
+
+          <pre>{JSON.stringify({ foundItems }, null, 2)}</pre>
+
         </Container>
       </Layout>
     )
@@ -47,25 +50,27 @@ class SnapshotItemsPage extends React.Component {
 export default withData(
   SnapshotItemsPage,
   {
-    variables: ({ query }, { pathQuery }) => ({
-      pathQuery
+    variables: ({ query }, { itemPathQuery }) => ({
+      itemPathQuery
     }),
     query: graphql`
       query snapshotItemsQuery(
-        $pathQuery: String!
+        $itemPathQuery: String!
       ) {
-        searchCurrentSnapshotItems(
-          pathQuery: $pathQuery
+        foundItems: searchCurrentSnapshotItems(
+          pathQuery: $itemPathQuery
         ) {
           edges {
             node {
               id
               path
+              valueJSON
+              snapshotId
               stream {
                 id
+                streamId
                 labelJSON
               }
-              currentValueJSON
             }
           }
         }

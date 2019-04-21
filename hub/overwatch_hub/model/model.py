@@ -80,7 +80,8 @@ class Model:
         if unknown_keys:
             logger.info('Unknown keys in report data: %s', ', '.join(unknown_keys))
         stream_id = await self.streams.resolve_id_by_label(report_label)
-        await self.stream_snapshots.insert(
+        new_snapshot = await self.stream_snapshots.insert(
             date=report_date,
             stream_id=stream_id,
             state=report_state)
+        await self.streams.update_last_snapshot_id(stream_id, new_snapshot.id)

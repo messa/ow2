@@ -3,7 +3,10 @@ from simplejson import loads as json_loads
 
 
 def to_objectid(v):
-    return v if isinstance(v, ObjectId) else ObjectId(v)
+    try:
+        return v if isinstance(v, ObjectId) else ObjectId(v)
+    except Exception as e:
+        raise Exception(f'Cannot convert {v!r} to ObjectId: {e!r}')
 
 
 def parse_state(state):

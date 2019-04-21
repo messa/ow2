@@ -63,6 +63,21 @@ class StreamSnapshots:
         doc = await self._c_snapshots.find_one({'_id': to_objectid(snapshot_id)})
         return self._stream_snapshot(doc_snapshot=doc)
 
+    async def get_by_ids(self, snapshot_ids, load_state=True):
+        snapshot_ids = [to_objectid(x) for x in snapshot_ids]
+        q = {'_id': {'$in': snapshot_ids}}
+        docs = await self._c_snapshots.find(q).to_list(length=None)
+        docs = {doc['_id']: doc for doc in docs}
+        state_docs = {}
+        if load_state:
+            state_docs = await self._c_states.find(q).to_list(length=None)
+            state_docs = {doc['_id']: doc for doc in state_docs}
+        return [
+            self._stream_snapshot(
+                doc_snapshot=docs[snapshot_id],
+                doc_state=state_docs.get(snapshot_id))
+            for snapshot_id in snapshot_ids]
+
     async def list_by_stream_id(self, stream_id):
         assert isinstance(stream_id, str)
         c = self._c_snapshots.find(
@@ -208,3 +223,7 @@ class SnapshotItem (SnapshotItemBase):
     @property
     def is_counter(self):
         return bool(self.raw_counter)
+
+    @property
+    def path_str(self):
+        return ' > '.join(self.path)
