@@ -65,35 +65,36 @@ class SnapshotItem (ObjectType):
         return str(random())
 
     def resolve_path(item, info):
-        return item['path']
+        return item.path
 
     def resolve_path_str(item, info):
         return ' > '.join(item['path'])
 
     def resolve_key(item, info):
-        return item['key']
+        return item.key
 
     def resolve_value_json(item, info):
-        return item.get('value')
-
-    def resolve_unit(item, info):
-        return item.get('unit')
+        return item.value
 
     def resolve_is_counter(item, info):
-        if item.get('counter') == None:
-            return None
-        return bool(item['counter'])
+        return item.is_counter
 
     def resolve_check_json(item, info):
-        return item.get('check')
+        return item.raw_check
 
     def resolve_watchdog_json(item, info):
-        return item.get('watchdog')
+        return item.raw_watchdog
 
-    def resolve_stream(item, info):
+    def resolve_stream_id(item, info):
+        return item.stream_id
+
+    async def resolve_stream(item, info):
         raise Exception('NIY: SnapshotItem resolve_stream')
 
-    def resolve_snapshot(item, info):
+    def resolve_snapshot_id(item, info):
+        return item.snapshot_id
+
+    async def resolve_snapshot(item, info):
         raise Exception('NIY: SnapshotItem resolve_snapshot')
 
 
@@ -129,8 +130,7 @@ class StreamSnapshot (ObjectType):
         return stream
 
     def resolve_state_items(snapshot, info):
-        logger.debug('StreamSnapshot %r resolve_state_items -> %r', snapshot, snapshot.state_items_flat)
-        return snapshot.state_items_flat
+        return snapshot.state_items
 
 
 class Stream (ObjectType):

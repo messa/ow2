@@ -36,7 +36,7 @@ def parse_state(state):
     return items
 
 
-def flatten_nested_state_items(nested_items):
+def flatten_state_items_tree(nested_items):
     flat_items = []
     _flatten(flat_items, nested_items, ())
     return flat_items
