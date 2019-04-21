@@ -45,6 +45,7 @@ async def test_stream_is_created(model, sample_snapshot_loaded):
 async def test_stream_snapshots_get_latest(model, sample_snapshot_loaded,):
     stream, = await model.streams.list_all()
     snapshot = await model.stream_snapshots.get_latest(stream_id=stream.id)
+    await snapshot.load_state()
     assert snapshot.stream_id == stream.id
     assert snapshot.date.isoformat() == '2019-04-01T00:30:00+00:00'
     assert yaml_dump(json_loads(snapshot.state_json)) == dedent('''\
