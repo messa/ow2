@@ -118,7 +118,6 @@ class StreamSnapshot (ObjectType):
     date = DateTime()
     state_json = String(name='stateJSON')
     state_items = List(SnapshotItem)
-
     stream = Field(lambda: Stream)
 
     def resolve_snapshot_id(snapshot, info):
@@ -129,7 +128,12 @@ class StreamSnapshot (ObjectType):
         stream = await model.streams.get_by_id(snapshot.stream_id)
         return stream
 
-    def resolve_state_items(snapshot, info):
+    async def resolve_state_json(snapshot, info):
+        await snapshot.load_state()
+        return snapshot.state_json
+
+    async def resolve_state_items(snapshot, info):
+        await snapshot.load_state()
         return snapshot.state_items
 
 
@@ -161,12 +165,12 @@ class Stream (ObjectType):
 
     async def resolve_last_snapshot_date(stream, info):
         model = get_model(info)
-        snapshot = await model.stream_snapshots.get_latest_metadata(stream_id=stream.id)
+        snapshot = await model.stream_snapshots.get_latest(stream_id=stream.id)
         return snapshot.date
 
     async def resolve_snapshots(stream, info):
         model = get_model(info)
-        snapshots = await model.stream_snapshots.list_metadata(stream_id=stream.id)
+        snapshots = await model.stream_snapshots.list_by_stream_id(stream_id=stream.id)
         return snapshots
 
 

@@ -15,9 +15,7 @@ logger = getLogger(__name__)
 
 
 def to_utc(dt):
-    utc_dt = utc.normalize(dt) if dt.tzinfo else utc.localize(dt)
-    logger.debug('utc_localize(%r) -> %r', dt, utc_dt)
-    return utc_dt
+    return utc.normalize(dt) if dt.tzinfo else utc.localize(dt)
 
 
 class StreamSnapshots:
@@ -25,6 +23,9 @@ class StreamSnapshots:
     def __init__(self, db):
         self._c_snapshots = db['streams.snapshots']
         self._c_states = db['streams.snapshots.states']
+
+    def _stream_snapshot(self, **kwargs):
+        return StreamSnapshot(c_states=self._c_states, **kwargs)
 
     async def create_optional_indexes(self):
         await self._c_snapshots.create_index([
@@ -48,41 +49,28 @@ class StreamSnapshots:
         await self._c_states.insert_one(doc_state)
         await self._c_snapshots.insert_one(doc_snapshot)
         logger.info('Inserted %s %s', self._c_snapshots.name, doc_snapshot['_id'])
-        return await self._obj(doc_snapshot, doc_state)
+        return self._stream_snapshot(doc_snapshot=doc_snapshot, doc_state=doc_state)
 
     async def get_latest(self, stream_id):
         assert isinstance(stream_id, str)
         doc = await self._c_snapshots.find_one(
             {'stream_id': stream_id},
             sort=[('date', DESC)])
-        return await self._obj(doc)
+        return self._stream_snapshot(doc_snapshot=doc)
 
     async def get_by_id(self, snapshot_id):
         assert isinstance(snapshot_id, str)
         doc = await self._c_snapshots.find_one({'_id': to_objectid(snapshot_id)})
-        return await self._obj(doc)
+        return self._stream_snapshot(doc_snapshot=doc)
 
-
-    async def get_latest_metadata(self, stream_id):
-        assert isinstance(stream_id, str)
-        doc = await self._c_snapshots.find_one(
-            {'stream_id': stream_id},
-            sort=[('date', DESC)])
-        return StreamSnapshotMetadata(doc)
-
-    async def list_metadata(self, stream_id):
+    async def list_by_stream_id(self, stream_id):
         assert isinstance(stream_id, str)
         c = self._c_snapshots.find(
             {'stream_id': stream_id},
             sort=[('date', DESC)],
             limit=10000)
         docs = await c.to_list(length=None)
-        return [StreamSnapshotMetadata(doc) for doc in docs]
-
-    async def _obj(self, doc_snapshot, doc_state=None):
-        if not doc_state and not doc_snapshot.get('state_json'):
-            doc_state = await self._c_states.find_one({'_id': doc_snapshot['_id']})
-        return StreamSnapshot(doc_snapshot, doc_state)
+        return [self._stream_snapshot(doc_snapshot=doc) for doc in docs]
 
     async def dump(self, stream_id=None, after_snapshot_id=None):
         q = {}
@@ -102,42 +90,62 @@ class StreamSnapshots:
             if not doc_state and not snapshot_doc['state_json']:
                 logger.info('%s id %s not found', self._c_states.name, snapshot_doc['_id'])
                 continue
-            out.append(StreamSnapshot(
+            out.append(self._stream_snapshot(
                 doc_snapshot=snapshot_doc,
                 doc_state=doc_state,
             ))
         return out
 
 
-class StreamSnapshotMetadata:
-
-    __slots__ = ('id', 'date', 'stream_id')
-
-    def __init__(self, doc_snapshot):
-        self.id = doc_snapshot['_id']
-        self.date = to_utc(doc_snapshot['date'])
-        self.stream_id = doc_snapshot['stream_id']
-
-    def __repr__(self):
-        return f'<{self.__class__.__name__} {self.id}>'
+# class StreamSnapshotMetadata:
+#
+#     __slots__ = ('id', 'date', 'stream_id')
+#
+#     def __init__(self, doc_snapshot):
+#         self.id = doc_snapshot['_id']
+#         self.date = to_utc(doc_snapshot['date'])
+#         self.stream_id = doc_snapshot['stream_id']
+#
+#     def __repr__(self):
+#         return f'<{self.__class__.__name__} {self.id}>'
 
 
 class StreamSnapshot:
 
     __slots__ = (
-        'id', 'date', 'stream_id', 'state_json',
+        'id', 'date', 'stream_id',
+        '_c_states', '_state_json',
         '_raw_state_items_tree', '_raw_state_items', '_state_items',
     )
 
-    def __init__(self, doc_snapshot, doc_state):
+    def __init__(self, c_states, doc_snapshot, doc_state=None):
         assert not doc_state or doc_snapshot['_id'] == doc_state['_id']
+        self._c_states = c_states
         self.id = doc_snapshot['_id']
         self.date = to_utc(doc_snapshot['date'])
         self.stream_id = doc_snapshot['stream_id']
-        self.state_json = doc_snapshot.get('state_json') or doc_state['state_json']
+        if doc_snapshot.get('state_json'):
+            self._state_json = doc_snapshot.get('state_json')
+        elif doc_state:
+            self._state_json = doc_state['state_json']
+        else:
+            self._state_json = None
         self._raw_state_items_tree = None
         self._raw_state_items = None
         self._state_items = None
+
+    async def load_state(self):
+        if self._state_json is not None:
+            return
+        assert isinstance(self.id, ObjectId)
+        doc = await self._c_states.find_one({'_id': self.id})
+        self._state_json = doc['state_json']
+
+    @property
+    def state_json(self):
+        if self._state_json is None:
+            raise Exception('state_json is not loaded')
+        return self._state_json
 
     @property
     def raw_state_items_tree(self):
