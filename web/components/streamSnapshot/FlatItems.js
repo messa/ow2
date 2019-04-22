@@ -1,4 +1,5 @@
 import React from 'react'
+import SnapshotItemValue from './SnapshotItemValue'
 
 export default class FlatItems extends React.Component {
 
@@ -27,9 +28,7 @@ export default class FlatItems extends React.Component {
 
             {item.valueJSON && (
               <span className='value' style={{ marginLeft: 10 }}>
-                <code style={{ fontSize: 12 }}>
-                  {item.valueJSON}
-                </code>
+                <SnapshotItemValue item={item} />
               </span>
             )}
 

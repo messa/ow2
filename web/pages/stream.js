@@ -1,5 +1,4 @@
 import React from 'react'
-import { withRouter } from 'next/router'
 import { graphql } from 'react-relay'
 import withData from '../lib/withData'
 import Container from '../components/ui/Container'
@@ -152,7 +151,7 @@ class StreamPage extends React.Component {
 }
 
 export default withData(
-  withRouter(StreamPage),
+  StreamPage,
   {
     variables: ({ query }, { streamId, showTab, stateView, historySnapshotId, historyStateView }) => ({
       streamId,
