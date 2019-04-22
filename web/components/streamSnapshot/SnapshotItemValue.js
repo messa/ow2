@@ -2,8 +2,11 @@ import React from 'react'
 
 const round = Math.round
 
-export default ({ item }) => {
-  const { unit, valueJSON } = item
+export default ({ item, valueJSON, unit }) => {
+  if (item && !valueJSON) {
+    valueJSON = item.valueJSON
+    unit = item.unit
+  }
   const value = JSON.parse(valueJSON)
   if (unit === 'bytes' && typeof value === 'number') {
     if (value < 1000) return value + ' B'

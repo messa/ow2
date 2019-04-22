@@ -126,6 +126,7 @@ export default withData(
               id
               path
               valueJSON
+              unit
               snapshotId
               snapshotDate
               stream {
