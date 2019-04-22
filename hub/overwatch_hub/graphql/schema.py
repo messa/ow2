@@ -244,6 +244,49 @@ class StreamConnection (Connection):
         node = Stream
 
 
+class Alert (ObjectType):
+
+    class Meta:
+        interfaces = (Node, )
+
+    @classmethod
+    def get_node(cls, info, id):
+        raise Exception('NIY')
+
+    alert_id = String()
+    stream_id = String()
+    stream = Field(Stream)
+    alert_type = String()
+    item_path = List(String)
+    first_snapshot_id = String()
+    first_snapshot_date = DateTime()
+    last_snapshot_id = String()
+    last_snapshot_date = DateTime()
+    first_item_value_json = JSONString(name='firstItemValueJSON')
+    last_item_value_json = JSONString(name='lastItemValueJSON')
+    first_item_unit = String()
+    last_item_unit = String()
+
+    def resolve_alert_id(alert, info):
+        return alert.id
+
+    async def resolve_stream(alert, info):
+        return get_model(info).streams.get_by_id(alert.stream_id)
+
+    def resolve_first_item_value_json(alert, info):
+        return alert.first_item_value
+
+    def resolve_last_item_value_json(alert, info):
+        return alert.last_item_value
+
+
+
+class AlertConnection (Connection):
+
+    class Meta:
+        node = Alert
+
+
 class Query (ObjectType):
 
     node = Node.Field()
@@ -252,6 +295,7 @@ class Query (ObjectType):
     streams = ConnectionField(StreamConnection)
     stream_snapshot = Field(StreamSnapshot, snapshot_id=String(required=True))
     search_current_snapshot_items = ConnectionField(SnapshotItemConnection, path_query=String(required=True))
+    active_alerts = ConnectionField(AlertConnection)
 
     async def resolve_stream(root, info, stream_id):
         model = get_model(info)
@@ -287,6 +331,9 @@ class Query (ObjectType):
             'resolve_search_current_snapshot_items %r found %s items in %.3f s',
             path_query, len(found_items), monotime() - t)
         return found_items
+
+    async def resolve_active_alerts(root, info):
+        return await get_model(info).alerts.list_active()
 
 
 def get_model(info):

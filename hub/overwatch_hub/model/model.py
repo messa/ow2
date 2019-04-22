@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from logging import getLogger
 
 from ..util import get_mongo_db_name, smart_repr, parse_datetime, to_compact_json
+from .alerts import Alerts
 from .streams import Streams
 from .stream_snapshots import StreamSnapshots
 
@@ -50,6 +51,7 @@ class Model:
     def __init__(self, db, create_optional_indexes=True):
         self.db = db
         self._create_optional_indexes = create_optional_indexes
+        self.alerts = Alerts(db)
         self.streams = Streams(db)
         self.stream_snapshots = StreamSnapshots(db)
 
@@ -85,3 +87,25 @@ class Model:
             stream_id=stream_id,
             state=report_state)
         await self.streams.update_last_snapshot_id(stream_id, new_snapshot.id)
+        for item in new_snapshot.state_items:
+            if item.check_state != None and item.check_state != 'green':
+                await self.alerts.create_or_update_alert(
+                    stream_id=stream_id,
+                    alert_type='check',
+                    item_path=item.path,
+                    snapshot_id=new_snapshot.id,
+                    snapshot_date=new_snapshot.date,
+                    item_value=item.value,
+                    item_unit=item.unit)
+            if item.watchdog_expired == True:
+                await self.alerts.create_or_update_alert(
+                    stream_id=stream_id,
+                    alert_type='watchdog',
+                    item_path=item.path,
+                    snapshot_id=new_snapshot.id,
+                    snapshot_date=new_snapshot.date,
+                    item_value=item.value,
+                    item_unit=item.unit)
+        await self.alerts.deactivate_alerts(
+            stream_id=stream_id,
+            snapshot_id_ub=new_snapshot.id)

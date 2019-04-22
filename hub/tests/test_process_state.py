@@ -64,6 +64,18 @@ async def test_stream_snapshots_get_latest(model, sample_snapshot_loaded,):
 async def test_graphql_streams(model, sample_snapshot_loaded, graphql, remove_ids):
     query = '''
         query TestQuery {
+            activeAlerts {
+                edges {
+                    node {
+                        alertId
+                        streamId
+                        alertType
+                        itemPath
+                        firstSnapshotId
+                        lastSnapshotId
+                    }
+                }
+            }
             streams {
                 edges {
                     node {
@@ -98,6 +110,15 @@ async def test_graphql_streams(model, sample_snapshot_loaded, graphql, remove_id
     data = await graphql(query)
     data = remove_ids(data)
     assert yaml_dump(data) == dedent('''\
+        activeAlerts:
+          edges:
+          - node:
+              alertId: alertId000
+              alertType: watchdog
+              firstSnapshotId: snapshotId000
+              itemPath: [watchdog]
+              lastSnapshotId: snapshotId000
+              streamId: streamId000
         streams:
           edges:
           - node:
@@ -106,14 +127,14 @@ async def test_graphql_streams(model, sample_snapshot_loaded, graphql, remove_id
                 date: '2019-04-01T00:30:00+00:00'
                 greenCheckCount: 1
                 redCheckCount: 1
-                snapshotId: snapshotId001
+                snapshotId: snapshotId000
                 stateItems:
                 - checkJSON: null
                   checkState: null
                   isCounter: false
                   key: load
                   path: [load]
-                  snapshotId: snapshotId001
+                  snapshotId: snapshotId000
                   streamId: streamId000
                   unit: null
                   valueJSON: '1.2'
@@ -124,7 +145,7 @@ async def test_graphql_streams(model, sample_snapshot_loaded, graphql, remove_id
                   isCounter: false
                   key: uptime
                   path: [uptime]
-                  snapshotId: snapshotId001
+                  snapshotId: snapshotId000
                   streamId: streamId000
                   unit: seconds
                   valueJSON: '3600'
@@ -135,7 +156,7 @@ async def test_graphql_streams(model, sample_snapshot_loaded, graphql, remove_id
                   isCounter: false
                   key: disk_free
                   path: [disk_free]
-                  snapshotId: snapshotId001
+                  snapshotId: snapshotId000
                   streamId: streamId000
                   unit: bytes
                   valueJSON: '10000000'
@@ -146,7 +167,7 @@ async def test_graphql_streams(model, sample_snapshot_loaded, graphql, remove_id
                   isCounter: false
                   key: watchdog
                   path: [watchdog]
-                  snapshotId: snapshotId001
+                  snapshotId: snapshotId000
                   streamId: streamId000
                   unit: null
                   valueJSON: null

@@ -1,3 +1,4 @@
+from collections import defaultdict
 from logging import DEBUG, basicConfig, getLogger
 import os
 from pathlib import Path
@@ -96,27 +97,43 @@ def remove_ids():
 
     def _remove_ids(obj):
         translations = {}
-        counter = count()
+        counter = defaultdict(count)
 
         def translate(prefix, v):
             if v not in translations:
-                translations[v] = f'{prefix}{next(counter):03d}'
+                translations[v] = f'{prefix}{next(counter[prefix]):03d}'
             return translations[v]
 
-        id_keys = 'streamId snapshotId'.split()
+        id_keys = 'streamId snapshotId alertId'.split()
 
-        def r(obj):
+        def r1(obj):
             if isinstance(obj, dict):
                 res = {}
                 for k, v in obj.items():
                     if k in id_keys and isinstance(v, str):
                         v = translate(k, v)
-                    res[k] = r(v)
+                    res[k] = r1(v)
                 return res
             if isinstance(obj, list):
-                return [r(v) for v in obj]
+                return [r1(v) for v in obj]
             return obj
 
-        return r(obj)
+        obj = r1(obj)
+
+        def r2(obj):
+            if isinstance(obj, dict):
+                res = {}
+                for k, v in obj.items():
+                    if isinstance(v, str) and v in translations:
+                        v = translations[v]
+                    res[k] = r2(v)
+                return res
+            if isinstance(obj, list):
+                return [r2(v) for v in obj]
+            return obj
+
+        obj = r2(obj)
+
+        return obj
 
     return _remove_ids
