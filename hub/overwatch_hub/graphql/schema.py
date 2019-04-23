@@ -234,7 +234,10 @@ class Stream (ObjectType):
                 return None
         t = monotime()
         items = await asyncio.gather(*[_get_hist(sn) for sn in snapshots])
-        logger.debug('Searched %s stream snapshot states in %.3f s', len(snapshots), monotime() - t)
+        items = [item for item in items if item is not None]
+        logger.debug(
+            'Searched %d stream snapshot states in %.3f s, found %d items',
+            len(snapshots), monotime() - t, len(items))
         return items
 
 
