@@ -9,6 +9,11 @@ class StreamSnapshot extends React.Component {
 
   render() {
     const { snapshot } = this.props
+    if (!snapshot) {
+      // should not happen, but apparently sometimes happens :)
+      if (window,console) console.warn('No snapshot in StreamSnapshot render')
+      return null
+    }
     const { nestedViewHref, flatViewHref, jsonViewHref } = this.props
     let { stateView } = this.props
     const { streamId } = snapshot
