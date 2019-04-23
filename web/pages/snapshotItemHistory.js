@@ -19,6 +19,9 @@ function addValueDelta(records) {
   let prevValue = null
   for (let i = records.length - 1; i >= 0; i--) {
     const record = records[i]
+    if (!record || !record.snapshotDate) {
+      continue
+    }
     const dateMS = new Date(record.snapshotDate) * 0.001
     const value = JSON.parse(record.valueJSON)
     let valueDelta = null
