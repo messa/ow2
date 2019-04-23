@@ -10,7 +10,6 @@ import StreamList from '../components/StreamList'
 import SnapshotHistory from '../components/SnapshotHistory'
 import LabelFromJSON from '../components/util/LabelFromJSON'
 import DateTime from '../components/util/DateTime'
-import StreamSnapshot from '../components/streamSnapshot/StreamSnapshot'
 import SnapshotItemValue from '../components/streamSnapshot/SnapshotItemValue'
 
 const escapeRegex = v => v // TODO :)

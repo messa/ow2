@@ -72,6 +72,7 @@ class StreamPage extends React.Component {
 
         {showTab === 'lastSnapshot' && (
           <StreamSnapshot
+            key={lastSnapshot.id}
             snapshot={lastSnapshot}
             stateView={stateView}
             nestedViewHref={{
@@ -108,8 +109,9 @@ class StreamPage extends React.Component {
             <div style={{ marginLeft: 25, flexGrow: 1 }}>
               {historySnapshot && (
                 <StreamSnapshot
-                  stateView={historyStateView}
+                  key={historySnapshot.id}
                   snapshot={historySnapshot}
+                  stateView={historyStateView}
                   nestedViewHref={{
                     pathname: '/stream',
                     query: {
