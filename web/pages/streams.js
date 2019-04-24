@@ -37,7 +37,7 @@ class StreamsPage extends React.Component {
     const { sortBy } = this.props
     return (
       <Layout activeItem='streams'>
-        <Container>
+        <Container wide>
           <p>
             Sort by:
             <SortLink label='agent, host' activeSortBy={sortBy} />

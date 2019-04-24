@@ -1,7 +1,7 @@
 import React from 'react'
 
-export default ({ children }) => (
-  <div className='owContainer'>
+export default ({ children, wide }) => (
+  <div className={wide ? 'owContainerWide' : 'owContainer'}>
     {children}
   </div>
 )

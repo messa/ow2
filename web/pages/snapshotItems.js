@@ -42,7 +42,7 @@ class SnapshotItemsPage extends React.Component {
     const foundItems = this.props.foundItems.edges.map(edge => edge.node)
     return (
       <Layout activeItem='streams'>
-        <Container>
+        <Container wide>
           <h1>Snapshot item search</h1>
 
           <form className='pathQueryForm'>
