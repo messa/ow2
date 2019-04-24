@@ -35,6 +35,9 @@ code {
 td, th {
   padding: 2px 4px;
 }
+tr:hover td {
+  background-color: #fafafa;
+}
 
 p {
   margin-top: 1rem;
