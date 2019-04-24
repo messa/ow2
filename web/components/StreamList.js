@@ -61,7 +61,7 @@ class StreamList extends React.Component {
               <th>Stream Id</th>
               <th>Label</th>
               <th>Checks</th>
-              <th>Last updated</th>
+              <th className='lastUpdatedCol'>Last updated</th>
             </tr>
           </thead>
           <tbody>
@@ -83,8 +83,7 @@ class StreamList extends React.Component {
                     <span className='redCheckCount'>{stream.lastSnapshot.redCheckCount}</span>
                   )}
                 </td>
-
-                <td><DateTime key={this.state.refetchCount} value={stream.lastSnapshotDate} /></td>
+                <td className='lastUpdatedCol'><DateTime key={this.state.refetchCount} value={stream.lastSnapshotDate} /></td>
               </tr>
             ))}
           </tbody>
@@ -110,6 +109,11 @@ class StreamList extends React.Component {
           }
           .redCheckCount {
             background-color: #d00;
+          }
+          @media (max-width: 1000px) {
+            .StreamList table .lastUpdatedCol {
+              display: none;
+            }
           }
         `}</style>
       </div>

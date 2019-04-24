@@ -57,7 +57,7 @@ a:hover {
 /* LabelPill */
 
 .LabelPill {
-  margin-left: 1em;
+  margin-right: 1em;
   display: inline-flex;
   align-items: stretch;
 }
@@ -65,8 +65,8 @@ a.LabelPill {
   text-decoration: none;
   color: #000;
 }
-.LabelPill:first-child {
-  margin-left: 0;
+.LabelPill:last-child {
+  margin-right: 0;
 }
 .LabelPill b {
   margin: 0;
