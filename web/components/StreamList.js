@@ -12,9 +12,14 @@ function sortSrteams(streamNodes, sortBy) {
     const aLabel = JSON.parse(a['labelJSON'])
     const bLabel = JSON.parse(b['labelJSON'])
     for (let part of sortParts) {
+      if (aLabel[part] && !bLabel[part]) return -1
+      if (!aLabel[part] && bLabel[part]) return 1
       if (aLabel[part] < bLabel[part]) return -1
       if (aLabel[part] > bLabel[part]) return 1
     }
+    if (a['labelJSON'] < b['labelJSON']) return -1
+    if (a['labelJSON'] > b['labelJSON']) return 1
+    return 0
   })
 }
 
