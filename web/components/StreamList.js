@@ -51,7 +51,7 @@ class StreamList extends React.Component {
 
   render() {
     const { query, sortBy } = this.props
-    const streamNodes = query.streams.edges.map(e => e.node)
+    const streamNodes = query.streams && query.streams.edges.map(e => e.node)
     sortSrteams(streamNodes, sortBy)
     return (
       <div className='StreamList'>
@@ -65,7 +65,7 @@ class StreamList extends React.Component {
             </tr>
           </thead>
           <tbody>
-            {streamNodes.map(stream => (
+            {streamNodes && streamNodes.map(stream => (
               <tr key={stream.id}>
                 <td>
                   <Link href={{ pathname: '/stream', query: { id: stream.streamId } }}><a>
