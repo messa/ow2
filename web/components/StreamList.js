@@ -11,8 +11,7 @@ function sortSrteams(streamNodes, sortBy) {
   streamNodes.sort((a, b) => {
     const aLabel = JSON.parse(a['labelJSON'])
     const bLabel = JSON.parse(b['labelJSON'])
-    for (let i = 0; i < sortParts.length; i++) {
-      const part = sortParts[i]
+    for (let part of sortParts) {
       if (aLabel[part] < bLabel[part]) return -1
       if (aLabel[part] > bLabel[part]) return 1
     }
@@ -74,7 +73,7 @@ class StreamList extends React.Component {
                   </a></Link>
                 </td>
                 <td>
-                  <LabelFromJSON labelJSON={stream.labelJSON} />
+                  <LabelFromJSON labelJSON={stream.labelJSON} sortBy={sortBy} />
                 </td>
                 <td>
                   {!stream.lastSnapshot.greenCheckCount || (

@@ -5,15 +5,36 @@ function toStr(v) {
   return (typeof v === 'string') ? v : JSON.stringify(v)
 }
 
+function getSortedLabelKeys(label, sortBy) {
+  if (!sortBy) {
+    return Object.keys(label)
+  }
+  if (typeof sortBy === 'string') {
+    sortBy = sortBy.split(',')
+  }
+  const sortedKeys = []
+  for (let part of sortBy) {
+    if (label[part]) {
+      sortedKeys.push(part)
+    }
+  }
+  for (let key of Object.keys(label)) {
+    if (!sortedKeys.includes(key)) {
+      sortedKeys.push(key)
+    }
+  }
+  return sortedKeys
+}
+
 export default class LabelFromJSON extends React.Component {
 
   render() {
-    const { labelJSON } = this.props
+    const { labelJSON, sortBy } = this.props
     const label = JSON.parse(labelJSON)
-    const labelArray = Object.keys(label).map(k => [k, label[k]])
+    const labelKeys = getSortedLabelKeys(label, sortBy)
     return (
       <span className='LabelFromJSON'>
-        {Object.keys(label).map(k => (
+        {labelKeys.map(k => (
           <LabelPill key={k} label={k} value={label[k]} href='/' />
         ))}
       </span>
