@@ -6,6 +6,19 @@ import DateTime from './util/DateTime'
 
 const refetchIntervalMS = 3 * 1000
 
+function sortSrteams(streamNodes, sortBy) {
+  const sortParts = sortBy.split(',')
+  streamNodes.sort((a, b) => {
+    const aLabel = JSON.parse(a['labelJSON'])
+    const bLabel = JSON.parse(b['labelJSON'])
+    for (let i = 0; i < sortParts.length; i++) {
+      const part = sortParts[i]
+      if (aLabel[part] < bLabel[part]) return -1
+      if (aLabel[part] > bLabel[part]) return 1
+    }
+  })
+}
+
 class StreamList extends React.Component {
 
   state = {
@@ -38,8 +51,9 @@ class StreamList extends React.Component {
   }
 
   render() {
-    const { query } = this.props
+    const { query, sortBy } = this.props
     const streamNodes = query.streams.edges.map(e => e.node)
+    sortSrteams(streamNodes, sortBy)
     return (
       <div className='StreamList'>
         <table className='u-full-width'>
