@@ -301,6 +301,7 @@ class Query (ObjectType):
     search_current_snapshot_items = ConnectionField(SnapshotItemConnection, path_query=String(required=True))
     active_alerts = ConnectionField(AlertConnection)
     inactive_alerts = ConnectionField(AlertConnection)
+    alert = Field(Alert, alert_id=String(required=True))
 
     async def resolve_stream(root, info, stream_id):
         model = get_model(info)
@@ -347,6 +348,10 @@ class Query (ObjectType):
 
     async def resolve_inactive_alerts(root, info):
         return await get_model(info).alerts.list_inactive()
+
+    async def resolve_alert(root, info, alert_id):
+        return await get_model(info).alerts.get_by_id(alert_id)
+
 
 
 def get_model(info):

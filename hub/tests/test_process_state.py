@@ -61,6 +61,15 @@ async def test_stream_snapshots_get_latest(model, sample_snapshot_loaded,):
 
 
 @mark.asyncio
+async def test_alert_is_created(model, sample_snapshot_loaded):
+    assert await model.alerts.list_inactive() == []
+    active_alert, = await model.alerts.list_active()
+    assert active_alert.alert_type == 'watchdog'
+    assert active_alert.item_path == ('watchdog', )
+    assert await model.alerts.get_by_id(active_alert.id)
+
+
+@mark.asyncio
 async def test_graphql_streams(model, sample_snapshot_loaded, graphql, remove_ids):
     query = '''
         query TestQuery {
