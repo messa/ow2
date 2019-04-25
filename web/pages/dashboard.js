@@ -14,11 +14,6 @@ class DashboardPage extends React.Component {
         <Container>
           <h2>Active alerts</h2>
           <ActiveAlertList query={this.props} />
-
-          <p>
-            <Link href='/alerts'><a>See all alerts</a></Link>
-          </p>
-
         </Container>
       </Layout>
     )
