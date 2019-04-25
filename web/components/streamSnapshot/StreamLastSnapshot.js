@@ -30,9 +30,7 @@ class StreamLastSnapshot extends React.Component {
       }),
       null,
       (err) => {
-        if (err) {
-          console.warn('Refetched with errors:', err)
-        }
+        if (err) console.warn('Refetch error:', err)
         this.setState({ refetchCount: this.refetchCount++ })
         this.refetchTimeoutId = setTimeout(this.refetch, refetchIntervalMS)
       },

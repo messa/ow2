@@ -35,9 +35,6 @@ class NestedItem extends React.Component {
   }
 
   onValueClick = () => {
-    //const { nodeKey, node } = this.props
-    //const { item } = node
-    //console.debug('onValueClick', nodeKey, JSON.stringify({ item }))
     this.setState({ showDetails: !this.state.showDetails })
   }
 
