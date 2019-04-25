@@ -23,13 +23,12 @@ class ActiveAlertList extends React.Component {
   }
 
   refetch = () => {
-    console.debug('Refetching')
     this.refetchTimeoutId = null
     this.props.relay.refetch(
       {},
       null,
-      () => {
-        console.debug('Refetched')
+      (err) => {
+        if (err) console.warn('Refetch error:', err)
         this.setState({ refetchCount: this.refetchCount++ })
         this.refetchTimeoutId = setTimeout(this.refetch, refetchIntervalMS)
       },
