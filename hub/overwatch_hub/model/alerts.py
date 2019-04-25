@@ -5,6 +5,7 @@ from pymongo import DESCENDING as DESC
 from time import monotonic as monotime
 
 from ..util import random_str
+from .errors import AlertNotFoundError
 from .helpers import to_objectid, to_utc
 
 
@@ -16,6 +17,17 @@ class Alerts:
     def __init__(self, db):
         self._c_active = db['alerts.active']
         self._c_inactive = db['alerts.inactive']
+
+    async def get_by_id(self, alert_id):
+        assert isinstance(alert_id, str)
+        active = True
+        doc = await self._c_active.find_one({'_id': alert_id})
+        if not doc:
+            active = False
+            doc = await self._c_inactive.find_one({'_id': alert_id})
+        if not doc:
+            raise AlertNotFoundError(alert_id=alert_id)
+        return Alert(doc, active=active)
 
     async def list_active(self):
         docs = await self._c_active.find({}).to_list(length=None)
