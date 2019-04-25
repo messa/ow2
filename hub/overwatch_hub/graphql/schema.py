@@ -297,6 +297,7 @@ class Query (ObjectType):
     stream = Field(Stream, stream_id=String(required=True))
     streams = ConnectionField(StreamConnection)
     stream_snapshot = Field(StreamSnapshot, snapshot_id=String(required=True))
+    last_stream_snapshot = Field(StreamSnapshot, stream_id=String(required=True))
     search_current_snapshot_items = ConnectionField(SnapshotItemConnection, path_query=String(required=True))
     active_alerts = ConnectionField(AlertConnection)
 
@@ -313,6 +314,11 @@ class Query (ObjectType):
     async def resolve_stream_snapshot(root, info, snapshot_id):
         model = get_model(info)
         snapshot = await model.stream_snapshots.get_by_id(snapshot_id)
+        return snapshot
+
+    async def resolve_last_stream_snapshot(root, info, stream_id):
+        model = get_model(info)
+        snapshot = await model.stream_snapshots.get_latest(stream_id=stream_id)
         return snapshot
 
     async def resolve_search_current_snapshot_items(root, info, path_query):

@@ -6,7 +6,7 @@ import LabelFromJSON from './util/LabelFromJSON'
 
 const refetchIntervalMS = 3 * 1000
 
-function sortSrteams(streamNodes, sortBy) {
+function sortStreams(streamNodes, sortBy) {
   const sortParts = sortBy.split(',')
   streamNodes.sort((a, b) => {
     const aLabel = JSON.parse(a['labelJSON'])
@@ -56,7 +56,8 @@ class StreamList extends React.Component {
   render() {
     const { query, sortBy } = this.props
     const streamNodes = query.streams && query.streams.edges.map(e => e.node)
-    sortSrteams(streamNodes, sortBy)
+    if (!streamNodes) return null
+    sortStreams(streamNodes, sortBy)
     return (
       <div className='StreamList'>
         <table className='u-full-width'>

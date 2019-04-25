@@ -129,6 +129,7 @@ export default class NestedItems extends React.Component {
   render() {
     const { stateItems, streamId } = this.props
     const nestedItemsRootNode = buildTree(stateItems)
+    if (!nestedItemsRootNode) return null
     return (
       <div className='streamSnapshot-NestedItems'>
 

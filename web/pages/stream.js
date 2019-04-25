@@ -73,8 +73,7 @@ class StreamPage extends React.Component {
         {showTab === 'lastSnapshot' && (
           <StreamLastSnapshot
             key={streamId + 'lastSnapshot'}
-            streamId={streamId}
-            lastSnapshot={lastSnapshot}
+            stream={stream}
             stateView={stateView}
             nestedViewHref={{
               pathname: '/stream',
@@ -184,13 +183,10 @@ export default withData(
           streamId
           labelJSON
           lastSnapshotDate
-          lastSnapshot @include(if: $getLastSnapshot) {
-            id
-            ...StreamLastSnapshot_lastSnapshot @arguments(
-              withJSON: $getLastSnapshotJSON,
-              withItems: $getLastSnapshotItems,
-            )
-          }
+          ...StreamLastSnapshot_stream @include(if: $getLastSnapshot) @arguments(
+            withJSON: $getLastSnapshotJSON,
+            withItems: $getLastSnapshotItems,
+          )
           snapshots @include(if: $getSnapshots) {
             edges {
               cursor
