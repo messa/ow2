@@ -21,6 +21,7 @@ function transparentFavicon(req, res) {
 app.prepare().then(() => {
   const server = express()
 
+  server.get('/', (req, res) => res.redirect('/dashboard'))
   server.get('/favicon.ico', transparentFavicon)
 
   server.use(bodyParser.json())
