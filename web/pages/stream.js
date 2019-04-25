@@ -8,6 +8,7 @@ import StreamList from '../components/StreamList'
 import SnapshotHistory from '../components/SnapshotHistory'
 import LabelFromJSON from '../components/util/LabelFromJSON'
 import DateTime from '../components/util/DateTime'
+import StreamSnapshot from '../components/streamSnapshot/StreamSnapshot'
 import StreamLastSnapshot from '../components/streamSnapshot/StreamLastSnapshot'
 
 class StreamPage extends React.Component {

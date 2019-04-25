@@ -1,5 +1,10 @@
 from bson import ObjectId
+from pytz import utc
 from simplejson import loads as json_loads
+
+
+def to_utc(dt):
+    return utc.normalize(dt) if dt.tzinfo else utc.localize(dt)
 
 
 def to_objectid(v):

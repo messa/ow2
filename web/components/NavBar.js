@@ -14,6 +14,7 @@ export default ({ activeItem }) => {
       <Link href="/dashboard"><a className='siteName'>Overwatch</a></Link>
       {navLink('dashboard', '/dashboard', 'Dashboard')}
       {navLink('streams', '/streams', 'Streams')}
+      {navLink('alerts', '/alerts', 'Alerts')}
       <style jsx>{`
         nav {
           background: hsl(216, 50%, 30%);
