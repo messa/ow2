@@ -8,7 +8,7 @@ import StreamList from '../components/StreamList'
 import SnapshotHistory from '../components/SnapshotHistory'
 import LabelFromJSON from '../components/util/LabelFromJSON'
 import DateTime from '../components/util/DateTime'
-import StreamSnapshot from '../components/streamSnapshot/StreamSnapshot'
+import StreamLastSnapshot from '../components/streamSnapshot/StreamLastSnapshot'
 
 class StreamPage extends React.Component {
 
@@ -71,9 +71,10 @@ class StreamPage extends React.Component {
           />
 
         {showTab === 'lastSnapshot' && (
-          <StreamSnapshot
-            key={lastSnapshot.id}
-            snapshot={lastSnapshot}
+          <StreamLastSnapshot
+            key={streamId + 'lastSnapshot'}
+            streamId={streamId}
+            lastSnapshot={lastSnapshot}
             stateView={stateView}
             nestedViewHref={{
               pathname: '/stream',
@@ -185,7 +186,7 @@ export default withData(
           lastSnapshotDate
           lastSnapshot @include(if: $getLastSnapshot) {
             id
-            ...StreamSnapshot_snapshot @arguments(
+            ...StreamLastSnapshot_lastSnapshot @arguments(
               withJSON: $getLastSnapshotJSON,
               withItems: $getLastSnapshotItems,
             )
