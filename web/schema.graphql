@@ -69,6 +69,7 @@ type Query {
   searchCurrentSnapshotItems(pathQuery: String!, before: String, after: String, first: Int, last: Int): SnapshotItemConnection
   activeAlerts(before: String, after: String, first: Int, last: Int): AlertConnection
   inactiveAlerts(before: String, after: String, first: Int, last: Int): AlertConnection
+  alert(alertId: String!): Alert
 }
 
 type SnapshotItem implements Node {

@@ -31,7 +31,16 @@ class AlertTable extends React.Component {
           {alertNodes.map(alert => (
             <tr key={alert.id}>
               <td>
-                <code>{alert.alertId}</code>
+                <Link
+                  href={{
+                    pathname: '/alert',
+                    query: {
+                      'id': alert.alertId,
+                    }
+                  }}
+                >
+                  <a><code>{alert.alertId}</code></a>
+                </Link>
               </td>
               <td>
                 <Link
