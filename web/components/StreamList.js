@@ -1,8 +1,8 @@
 import React from 'react'
-import { createRefetchContainer, graphql } from 'react-relay'
 import Link from 'next/link'
-import LabelFromJSON from './util/LabelFromJSON'
+import { createRefetchContainer, graphql } from 'react-relay'
 import DateTime from './util/DateTime'
+import LabelFromJSON from './util/LabelFromJSON'
 
 const refetchIntervalMS = 3 * 1000
 
@@ -42,8 +42,7 @@ class StreamList extends React.Component {
 
   refetch = () => {
     this.refetchTimeoutId = null
-    const { relay } = this.props
-    relay.refetch(
+    this.props.relay.refetch(
       {},
       null,
       () => {
