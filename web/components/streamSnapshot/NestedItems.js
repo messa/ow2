@@ -4,6 +4,9 @@ import StreamItemDetail from './StreamItemDetail'
 import SnapshotItemValue  from './SnapshotItemValue'
 
 function buildTree(flatItems) {
+  if (!flatItems) {
+    return null
+  }
   const root = {
     children: new Map(),
   }
