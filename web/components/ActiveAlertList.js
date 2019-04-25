@@ -42,7 +42,6 @@ class ActiveAlertList extends React.Component {
   render() {
     const { query } = this.props
     const { refetchCount } = this.state
-    console.debug({ props: this.props })
     const activeAlerts = query.activeAlerts.edges.map(edge => edge.node)
     return (
       <div className='ActiveAlertList'>

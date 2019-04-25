@@ -65,6 +65,7 @@ type Query {
   stream(streamId: String!): Stream
   streams(before: String, after: String, first: Int, last: Int): StreamConnection
   streamSnapshot(snapshotId: String!): StreamSnapshot
+  lastStreamSnapshot(streamId: String!): StreamSnapshot
   searchCurrentSnapshotItems(pathQuery: String!, before: String, after: String, first: Int, last: Int): SnapshotItemConnection
   activeAlerts(before: String, after: String, first: Int, last: Int): AlertConnection
 }
