@@ -68,6 +68,7 @@ type Query {
   lastStreamSnapshot(streamId: String!): StreamSnapshot
   searchCurrentSnapshotItems(pathQuery: String!, before: String, after: String, first: Int, last: Int): SnapshotItemConnection
   activeAlerts(before: String, after: String, first: Int, last: Int): AlertConnection
+  inactiveAlerts(before: String, after: String, first: Int, last: Int): AlertConnection
 }
 
 type SnapshotItem implements Node {

@@ -23,7 +23,7 @@ export default ({ item, valueJSON, unit }) => {
   }
   return (
     <code style={{ fontSize: 12 }}>
-      {item.valueJSON}
+      {valueJSON}
     </code>
   )
 }

@@ -1,9 +1,11 @@
 from bson import ObjectId
 from datetime import datetime
 from logging import getLogger
+from pymongo import DESCENDING as DESC
+from time import monotonic as monotime
 
 from ..util import random_str
-from .helpers import to_objectid
+from .helpers import to_objectid, to_utc
 
 
 logger = getLogger(__name__)
@@ -18,6 +20,13 @@ class Alerts:
     async def list_active(self):
         docs = await self._c_active.find({}).to_list(length=None)
         return [Alert(doc, active=True) for doc in docs]
+
+    async def list_inactive(self):
+        t = monotime()
+        docs = await self._c_inactive.find({},
+            sort=[('last_snapshot_id', DESC)], limit=100).to_list(length=None)
+        logger.debug('Retrieved %d inactive alerts in %.3f s', len(docs), monotime() - t)
+        return [Alert(doc, active=False) for doc in docs]
 
     async def create_or_update_alert(self, stream_id, alert_type, item_path, snapshot_id, snapshot_date, item_value, item_unit):
         assert isinstance(stream_id, str)
@@ -85,9 +94,9 @@ class Alert:
         self.alert_type = doc['alert_type']
         self.item_path = tuple(doc['item_path'])
         self.first_snapshot_id = doc['first_snapshot_id']
-        self.first_snapshot_date = doc['first_snapshot_date']
+        self.first_snapshot_date = to_utc(doc['first_snapshot_date'])
         self.last_snapshot_id = doc['last_snapshot_id']
-        self.last_snapshot_date = doc['last_snapshot_date']
+        self.last_snapshot_date = to_utc(doc['last_snapshot_date'])
         self.first_item_value = doc['first_item_value']
         self.first_item_unit = doc.get('first_item_unit')
         self.last_item_value = doc['last_item_value']

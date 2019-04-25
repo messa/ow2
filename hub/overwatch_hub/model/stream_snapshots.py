@@ -5,19 +5,13 @@ from datetime import datetime
 from logging import getLogger
 from pymongo import ASCENDING as ASC
 from pymongo import DESCENDING as DESC
-from pytz import utc
 from time import time
 
 from ..util import to_compact_json
-from .helpers import to_objectid, parse_state, flatten_state_items_tree
+from .helpers import to_objectid, to_utc, parse_state, flatten_state_items_tree
 
 
 logger = getLogger(__name__)
-
-
-
-def to_utc(dt):
-    return utc.normalize(dt) if dt.tzinfo else utc.localize(dt)
 
 
 class StreamSnapshots:
