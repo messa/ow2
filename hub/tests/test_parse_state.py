@@ -36,27 +36,40 @@ def test_parse_simple_state():
     assert yaml_dump(parsed) == dedent('''\
         - items:
           - items:
-            - {key: logical, value: 4}
-            - {key: physical, value: 2}
+            - key: logical
+              value: 4
+            - key: physical
+              value: 2
             key: count
           - items:
-            - {key: user, value: 21979.35}
-            - {key: system, value: 11476.59}
-            - {key: idle, value: 220918.71}
+            - key: user
+              value: 21979.35
+            - key: system
+              value: 11476.59
+            - key: idle
+              value: 220918.71
             key: times
           - items:
-            - {key: ctx_switches, value: 280052}
-            - {key: interrupts, value: 700105}
-            - {key: soft_interrupts, value: 143144019}
-            - {key: syscalls, value: 1472139}
+            - key: ctx_switches
+              value: 280052
+            - key: interrupts
+              value: 700105
+            - key: soft_interrupts
+              value: 143144019
+            - key: syscalls
+              value: 1472139
             key: stats
           key: cpu
         - items:
-          - {key: 01m, value: 1.67}
-          - {key: 05m, value: 1.85}
-          - {key: 15m, value: 1.94}
+          - key: 01m
+            value: 1.67
+          - key: 05m
+            value: 1.85
+          - key: 15m
+            value: 1.94
           key: load
-        - {key: uptime, value: null}
+        - key: uptime
+          value: null
     ''')
 
 
@@ -73,7 +86,8 @@ def test_parse_complex_state_value():
     '''
     parsed = parse_state(state)
     assert yaml_dump(parsed) == dedent('''\
-      - check: {state: green}
+      - check:
+          state: green
         counter: null
         key: free_bytes
         unit: null
@@ -97,7 +111,8 @@ def test_parse_complex_state_value_with_metadata():
     '''
     parsed = parse_state(state)
     assert yaml_dump(parsed) == dedent('''\
-      - check: {state: green}
+      - check:
+          state: green
         counter: true
         key: user
         unit: seconds
