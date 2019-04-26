@@ -85,6 +85,9 @@ class Stream:
         self.created_date = doc['created']['date']
         self.last_snapshot_id = doc['last_snapshot_id']
 
+    def __repr__(self):
+        return f'<{self.__class__.__name__} id={self.id!r} label={self.label!r}>'
+
 
 def get_label_str(label):
     parts = []

@@ -14,7 +14,8 @@ logger = getLogger(__name__)
 
 class Alerts:
 
-    def __init__(self, db):
+    def __init__(self, db, alert_webhooks):
+        self._alert_webhooks = alert_webhooks
         self._c_active = db['alerts.active']
         self._c_inactive = db['alerts.inactive']
 
@@ -67,6 +68,9 @@ class Alerts:
             }
             await self._c_active.insert_one(doc)
             logger.debug('Inserted new alert: %r', doc)
+            alert = Alert(doc=doc, active=True)
+            if self._alert_webhooks:
+                self._alert_webhooks.new_alert_created(alert=alert)
             return
         await self._c_active.update_one(
             {
@@ -97,6 +101,9 @@ class Alerts:
             await self._c_inactive.replace_one({'_id': doc['_id']}, doc, upsert=True)
             await self._c_active.delete_one({'_id': doc['_id'], 'last_snapshot_id': doc['last_snapshot_id']})
             logger.info('Deactivated alert %s', doc['_id'])
+            alert = Alert(doc=doc, active=False)
+            if self._alert_webhooks:
+                self._alert_webhooks.alert_closed(alert=alert)
 
 
 class Alert:
@@ -115,3 +122,6 @@ class Alert:
         self.last_item_value = doc['last_item_value']
         self.last_item_unit = doc.get('last_item_unit')
         self.active = active
+
+    def __repr__(self):
+        return f'<{self.__class__.__name__} id={self.id!r} alert_type={self.alert_type!r} stream_id={self.stream_id!r} item_path={self.item_path!r}>'

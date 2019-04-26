@@ -38,10 +38,10 @@ def get_mongo_db(mongo_conf):
 
 
 @asynccontextmanager
-async def get_model(conf):
+async def get_model(conf, **kwargs):
     db = get_mongo_db(conf.mongodb)
     try:
-        async with Model(db) as model:
+        async with Model(db, **kwargs) as model:
             yield model
     finally:
         db.client.close()
@@ -49,10 +49,10 @@ async def get_model(conf):
 
 class Model:
 
-    def __init__(self, db, create_optional_indexes=True):
+    def __init__(self, db, alert_webhooks=None, create_optional_indexes=True):
         self.db = db
         self._create_optional_indexes = create_optional_indexes
-        self.alerts = Alerts(db)
+        self.alerts = Alerts(db, alert_webhooks=alert_webhooks)
         self.streams = Streams(db)
         self.stream_snapshots = StreamSnapshots(db)
         self.watchdog_checker = WatchdogChecker(model=self)
