@@ -7,8 +7,8 @@ from pymongo import ASCENDING as ASC
 from pymongo import DESCENDING as DESC
 from time import time
 
-from ..util import to_compact_json
-from .helpers import to_objectid, to_utc, parse_state, flatten_state_items_tree
+from ..util import to_compact_json, to_utc
+from .helpers import to_objectid, parse_state, flatten_state_items_tree
 
 
 logger = getLogger(__name__)

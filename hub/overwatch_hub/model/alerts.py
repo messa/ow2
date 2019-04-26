@@ -4,9 +4,9 @@ from logging import getLogger
 from pymongo import DESCENDING as DESC
 from time import monotonic as monotime
 
-from ..util import random_str
+from ..util import random_str, to_utc
 from .errors import AlertNotFoundError
-from .helpers import to_objectid, to_utc
+from .helpers import to_objectid
 
 
 logger = getLogger(__name__)
