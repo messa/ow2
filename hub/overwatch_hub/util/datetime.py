@@ -20,3 +20,12 @@ def parse_datetime(dt_str):
         return dt
     except Exception as e:
         raise Exception(f'Failed to parse datetime {dt_str!r}: {e!r}')
+
+
+def utc_datetime_from_ms_timestamp(ts):
+    if not isinstance(ts, int):
+        raise Exception(f'Expected int: {ts!r}')
+    dt = datetime.utcfromtimestamp(ts // 1000)
+    dt = dt.replace(microsecond=(ts % 1000) * 1000)
+    dt = utc.localize(dt)
+    return dt

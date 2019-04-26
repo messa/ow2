@@ -93,9 +93,10 @@ class Alerts:
             doc = await self._c_active.find_one(q)
             if not doc:
                 break
-            logger.info('Deactivating alert %s: %r', doc['_id'], doc)
+            logger.debug('Deactivating alert %s: %r', doc['_id'], doc)
             await self._c_inactive.replace_one({'_id': doc['_id']}, doc, upsert=True)
             await self._c_active.delete_one({'_id': doc['_id'], 'last_snapshot_id': doc['last_snapshot_id']})
+            logger.info('Deactivated alert %s', doc['_id'])
 
 
 class Alert:

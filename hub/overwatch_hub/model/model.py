@@ -6,6 +6,7 @@ from ..util import get_mongo_db_name, smart_repr, parse_datetime, to_compact_jso
 from .alerts import Alerts
 from .streams import Streams
 from .stream_snapshots import StreamSnapshots
+from .watchdog_checker import WatchdogChecker
 
 
 logger = getLogger(__name__)
@@ -54,14 +55,17 @@ class Model:
         self.alerts = Alerts(db)
         self.streams = Streams(db)
         self.stream_snapshots = StreamSnapshots(db)
+        self.watchdog_checker = WatchdogChecker(model=self)
 
     async def __aenter__(self):
         await self.create_mandatory_indexes()
         if self._create_optional_indexes:
             await self.create_optional_indexes()
+        await self.watchdog_checker.check_all_streams()
         return self
 
     async def __aexit__(self, exc_type, exc, tb):
+        self.watchdog_checker.stop()
         self.db = None
 
     async def create_mandatory_indexes(self):
@@ -97,15 +101,7 @@ class Model:
                     snapshot_date=new_snapshot.date,
                     item_value=item.value,
                     item_unit=item.unit)
-            if item.watchdog_expired == True:
-                await self.alerts.create_or_update_alert(
-                    stream_id=stream_id,
-                    alert_type='watchdog',
-                    item_path=item.path,
-                    snapshot_id=new_snapshot.id,
-                    snapshot_date=new_snapshot.date,
-                    item_value=item.value,
-                    item_unit=item.unit)
+        await self.watchdog_checker.check_stream(stream_id=stream_id, snapshot=new_snapshot)
         await self.alerts.deactivate_alerts(
             stream_id=stream_id,
             snapshot_id_ub=new_snapshot.id)

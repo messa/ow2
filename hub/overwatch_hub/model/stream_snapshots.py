@@ -7,7 +7,7 @@ from pymongo import ASCENDING as ASC
 from pymongo import DESCENDING as DESC
 from time import time
 
-from ..util import to_compact_json, to_utc
+from ..util import to_compact_json, to_utc, utc_datetime_from_ms_timestamp
 from .helpers import to_objectid, parse_state, flatten_state_items_tree
 
 
@@ -250,3 +250,9 @@ class SnapshotItem (SnapshotItemBase):
         if not self.raw_watchdog:
             return None
         return self.raw_watchdog['deadline'] <= time() * 1000
+
+    @property
+    def watchdog_deadline(self):
+        if not self.raw_watchdog:
+            return None
+        return utc_datetime_from_ms_timestamp(self.raw_watchdog['deadline'])
