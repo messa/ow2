@@ -1,4 +1,4 @@
-from asyncio import shield
+from asyncio import create_task, shield
 from bson import ObjectId
 from collections import namedtuple
 from datetime import datetime
@@ -124,7 +124,7 @@ class StreamSnapshot:
 
     __slots__ = (
         'id', 'date', 'stream_id',
-        '_c_states', '_state_json',
+        '_c_states', '_state_json', '_state_json_loading_task',
         '_raw_state_items_tree', '_raw_state_items', '_state_items',
     )
 
@@ -140,14 +140,20 @@ class StreamSnapshot:
             self._state_json = doc_state['state_json']
         else:
             self._state_json = None
+        self._state_json_loading_task = None
         self._raw_state_items_tree = None
         self._raw_state_items = None
         self._state_items = None
 
     async def load_state(self):
+        assert isinstance(self.id, ObjectId)
         if self._state_json is not None:
             return
-        assert isinstance(self.id, ObjectId)
+        if self._state_json_loading_task is None:
+            self._state_json_loading_task = create_task(self._do_load_state())
+        return await self._state_json_loading_task
+
+    async def _do_load_state(self):
         doc = await self._c_states.find_one({'_id': self.id})
         self._state_json = doc['state_json']
 
