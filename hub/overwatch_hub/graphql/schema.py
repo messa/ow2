@@ -283,7 +283,6 @@ class Alert (ObjectType):
         return alert.last_item_value
 
 
-
 class AlertConnection (Connection):
 
     class Meta:
