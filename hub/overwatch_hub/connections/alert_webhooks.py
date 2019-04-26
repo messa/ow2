@@ -48,7 +48,7 @@ class AlertWebhooks:
             try_count += 1
             stream = await self._model.streams.get_by_id(alert.stream_id)
             if webhook_conf.format == 'text':
-                payload = f'New alert: {alert} stream: {stream}'.encode()
+                payload = f'\u26A0\uFE0F New alert: {alert} stream: {stream}'.encode()
                 try:
                     async with self._session.post(webhook_conf.url, data=payload) as r:
                         r_text = await r.text()
@@ -72,7 +72,7 @@ class AlertWebhooks:
             try_count += 1
             stream = await self._model.streams.get_by_id(alert.stream_id)
             if webhook_conf.format == 'text':
-                payload = f'Alert closed: {alert} stream: {stream}'.encode()
+                payload = f'\u2705 Alert closed: {alert} stream: {stream}'.encode()
                 try:
                     async with self._session.post(webhook_conf.url, data=payload) as r:
                         r_text = await r.text()
