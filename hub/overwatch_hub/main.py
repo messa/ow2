@@ -9,6 +9,7 @@ from os import environ
 import sys
 
 from .configuration import Configuration
+from .connections import AlertWebhooks
 from .views import routes
 from .model import get_model
 from .graphql import graphql_schema
@@ -23,14 +24,14 @@ def hub_main():
     # TODO: put the version in a single location (it's also in setup.py)
     p.add_argument('--conf', '-f', help='path to configuration file')
     args = p.parse_args()
-    cfg_path = args.conf or environ.get('CONF_PATH')
+    setup_logging()
+    cfg_path = args.conf or environ.get('OVERWATCH_HUB_CONF') or environ.get('OW_HUB_CONF')
     if not cfg_path:
         sys.exit('ERROR: Please provide path to the configuration file.')
     try:
         conf = Configuration(cfg_path)
     except Exception as e:
-        sys.exit(f'ERROR - Failed to load configuration: {e}')
-    setup_logging()
+        sys.exit(f'ERROR - Failed to load configuration from {cfg_path}: {e}')
     logger.info('Starting Overwatch Hub')
     try:
         asyncio.run(async_main(conf))
@@ -50,7 +51,9 @@ def setup_logging():
 
 async def async_main(conf):
     async with AsyncExitStack() as stack:
-        model = await stack.enter_async_context(get_model(conf))
+        alert_webhooks = await stack.enter_async_context(AlertWebhooks(conf.alert_webhooks))
+        model = await stack.enter_async_context(get_model(conf, alert_webhooks=alert_webhooks))
+        alert_webhooks.set_model(model)
         app = web.Application()
         app['model'] = model
         app.router.add_routes(routes)

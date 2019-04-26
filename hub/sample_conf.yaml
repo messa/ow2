@@ -1,3 +1,6 @@
 overwatch_hub:
   mongodb:
     uri: mongodb://127.0.0.1:27017/dev_ow_hub
+  alert_webhooks: []
+    #- url: https://h2tg.messa.cz/send/-12345.rlabcdxyz
+    #  format: text

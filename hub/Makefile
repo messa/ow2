@@ -1,11 +1,12 @@
 venv_dir=venv
 python3=python3
+conf_path=sample_conf.yaml
 
 check: $(venv_dir)/packages-installed
 	$(venv_dir)/bin/python3 -m pytest -vvv -x --tb=native --no-print-logs --pythonwarnings=ignore $(pytest_args) tests
 
 run: $(venv_dir)/packages-installed
-	$(venv_dir)/bin/overwatch-hub --conf sample_conf.yaml
+	$(venv_dir)/bin/overwatch-hub --conf $(conf_path)
 
 run_mongodb:
 	mkdir -p mongo_data
