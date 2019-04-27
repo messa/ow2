@@ -28,13 +28,7 @@ class StreamPage extends React.Component {
       stream, historySnapshot, showTab, stateView,
       historySnapshotId, historyStateView
     } = this.props
-    //const { query } = this.props.router
-    //const showTab = query['tab'] || 'lastSnapshot'
-    //const stateView = query['stateView'] || 'nested'
-    //const { historySnapshotId } = query
     const { streamId, lastSnapshot, lastSnapshotDate } = stream
-    //const lastSnapshotState = lastSnapshot && JSON.parse(lastSnapshot.stateJSON)
-    //const historySnapshotState = historySnapshot && JSON.parse(historySnapshot.stateJSON)
     const snapshots = stream.snapshots && stream.snapshots.edges.map(edge => edge.node)
     return (
       <Layout activeItem='streams'>
