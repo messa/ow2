@@ -1,9 +1,21 @@
 import React from 'react'
 import { createFragmentContainer, graphql } from 'react-relay'
-import Link from 'next/link'
 import NestedItems from './NestedItems'
 import FlatItems from './FlatItems'
 import StateViewSwitcher from './StateViewSwitcher'
+
+function prettyJSON(jsonStr) {
+  let parsed
+  try {
+    parsed = JSON.parse(jsonStr)
+  } catch (err) {
+    if (window.console && console.debug) {
+      console.debug(`prettyJSON JSON.parse failed: ${err}; jsonStr: ${jsonStr}`)
+    }
+    return jsonStr
+  }
+  return JSON.stringify(parsed, null, 2)
+}
 
 class StreamSnapshot extends React.Component {
 
@@ -52,9 +64,7 @@ class StreamSnapshot extends React.Component {
                 marginRight: 'auto',
               }}
             >
-              {JSON.stringify(
-                JSON.parse(snapshot.stateJSON),
-                null, 2)}
+              {prettyJSON(snapshot.stateJSON)}
             </pre>
           </>
         )}
