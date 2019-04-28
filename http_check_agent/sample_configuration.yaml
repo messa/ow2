@@ -1,3 +1,5 @@
 overwatch_http_check_agent:
   report_url: http://localhost:8485/report
   report_token: topsecret
+  targets:
+  - url: https://ip4.messa.cz/
