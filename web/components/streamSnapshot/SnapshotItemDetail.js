@@ -7,7 +7,7 @@ function postprocessJSON(json) {
   return json
 }
 
-class StreamItemDetail extends React.Component {
+class SnapshotItemDetail extends React.Component {
 
   render() {
     const { item, streamId } = this.props
@@ -25,8 +25,8 @@ class StreamItemDetail extends React.Component {
       }
     }
     return (
-      <div className='StreamItemDetail'>
-        <div className='StreamItemDetail-container'>
+      <div className='SnapshotItemDetail'>
+        <div className='SnapshotItemDetail-container'>
           <p className='path'>
             {item.path.map((part, i) => (
               <span key={i}>
@@ -54,44 +54,44 @@ class StreamItemDetail extends React.Component {
           </p>
         </div>
         <style jsx>{`
-          .StreamItemDetail {
+          .SnapshotItemDetail {
             padding: 8px 25px;
             background-color: #fcfdfe;
             border-top: 1px dotted #ccc;
             border-bottom: 1px dotted #ccc;
           }
-          .StreamItemDetail-container {
+          .SnapshotItemDetail-container {
             max-width: 900px;
             margin: 0 auto;
           }
-          .StreamItemDetail :global(:first-child) {
+          .SnapshotItemDetail :global(:first-child) {
             margin-top: 0 !important;
           }
-          .StreamItemDetail :global(:last-child) {
+          .SnapshotItemDetail :global(:last-child) {
             margin-bottom: 0 !important;
           }
-          .StreamItemDetail .path {
+          .SnapshotItemDetail .path {
             font-size: 12px;
             font-weight: 300;
             margin-top: 0;
             color: #666;
           }
-          .StreamItemDetail .path span:first-child code:first-child {
+          .SnapshotItemDetail .path span:first-child code:first-child {
             padding-left: 0;
           }
-          .StreamItemDetail .path b,
-          .StreamItemDetail .path code {
+          .SnapshotItemDetail .path b,
+          .SnapshotItemDetail .path code {
             font-weight: 500;
           }
-          .StreamItemDetail p,
-          .StreamItemDetail pre {
+          .SnapshotItemDetail p,
+          .SnapshotItemDetail pre {
             margin-top: 0.8rem;
             margin-bottom: 0.8rem;
           }
-          .StreamItemDetail code {
+          .SnapshotItemDetail code {
             white-space: pre-wrap;
           }
-          .StreamItemDetail a.owButton {
+          .SnapshotItemDetail a.owButton {
             border: 1px solid hsl(0, 50%, 50%);
             color: hsl(0, 50%, 50%);
             border-radius: 6px;
@@ -102,10 +102,10 @@ class StreamItemDetail extends React.Component {
             margin-left: 1em;
             text-decoration: none;
           }
-          .StreamItemDetail a.owButton:hover {
+          .SnapshotItemDetail a.owButton:hover {
             text-decoration: none;
           }
-          .StreamItemDetail a.owButton:first-child {
+          .SnapshotItemDetail a.owButton:first-child {
             margin-left: 0;
           }
 
@@ -116,4 +116,4 @@ class StreamItemDetail extends React.Component {
 
 }
 
-export default StreamItemDetail
+export default SnapshotItemDetail

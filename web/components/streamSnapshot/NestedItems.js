@@ -1,6 +1,6 @@
 import React from 'react'
 import FullWidth from '../ui/FullWidth'
-import StreamItemDetail from './StreamItemDetail'
+import SnapshotItemDetail from './SnapshotItemDetail'
 import SnapshotItemValue  from './SnapshotItemValue'
 
 function buildTree(flatItems) {
@@ -92,7 +92,7 @@ class NestedItem extends React.Component {
         {(showDetails || (null && item && item.valueJSON === '4')) && (
           <div style={{ marginTop: 2, marginBottom: 2 }}>
             <FullWidth>
-              <StreamItemDetail item={item} streamId={streamId} />
+              <SnapshotItemDetail item={item} streamId={streamId} />
             </FullWidth>
           </div>
         )}
