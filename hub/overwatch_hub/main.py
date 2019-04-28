@@ -6,12 +6,13 @@ from contextlib import AsyncExitStack
 from graphql.execution.executors.asyncio import AsyncioExecutor as GQLAIOExecutor
 from logging import getLogger
 from os import environ
+from pymongo.errors import ConnectionFailure as MongoDBConnectionFailure
 import sys
 
 from .configuration import Configuration
 from .connections import AlertWebhooks
 from .views import routes
-from .model import get_model
+from .model import InitialConnectionError, get_model
 from .graphql import graphql_schema
 
 
@@ -37,8 +38,16 @@ def hub_main():
         asyncio.run(async_main(conf))
         logger.info('Overwatch Hub has grafecully finished')
     except BaseException as e:
-        logger.exception('Overwatch Hub has failed: %r', e)
-        sys.exit(f'ERROR: {e!r}')
+        # log via logging...
+        log_tb = getattr(e, 'log_traceback', True)
+        log = logger.exception if log_tb else logger.error
+        log('Overwatch Hub has failed: %r', e)
+        # ...and provide simple message (if possible) to stderr
+        try:
+            e_type_name = f'{type(e).__module__}.{type(e).__name__}'
+        except Exception:
+            e_type_name = str(type(e))
+        sys.exit(f'ERROR ({e_type_name}): {e}')
 
 
 def setup_logging():

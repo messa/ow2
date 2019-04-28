@@ -1,9 +1,11 @@
 from bson import ObjectId
 from contextlib import asynccontextmanager
 from logging import getLogger
+from pymongo.errors import ConnectionFailure
 
 from ..util import get_mongo_db_name, smart_repr, parse_datetime, to_compact_json
 from .alerts import Alerts
+from .errors import InitialConnectionError
 from .streams import Streams
 from .stream_snapshots import StreamSnapshots
 from .watchdog_checker import WatchdogChecker
@@ -58,7 +60,12 @@ class Model:
         self.watchdog_checker = WatchdogChecker(model=self)
 
     async def __aenter__(self):
-        await self.create_mandatory_indexes()
+        try:
+            # This is the first place where we actually talk to MongoDB,
+            # so any connection errors appear here - so here is the try-except
+            await self.create_mandatory_indexes()
+        except ConnectionFailure as e:
+            raise InitialConnectionError(f'Cound not connect to MongoDB: {e}')
         if self._create_optional_indexes:
             await self.create_optional_indexes()
         await self.watchdog_checker.check_all_streams()

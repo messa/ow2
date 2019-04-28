@@ -1,3 +1,6 @@
+class InitialConnectionError (Exception):
+    log_traceback = False
+
 
 class NotFoundError (Exception):
     pass
