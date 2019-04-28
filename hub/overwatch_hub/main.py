@@ -1,4 +1,4 @@
-from aiohttp import web
+from aiohttp.web import Application, AppRunner, TCPSite
 from aiohttp_graphql import GraphQLView
 from argparse import ArgumentParser
 import asyncio
@@ -7,13 +7,14 @@ from graphql.execution.executors.asyncio import AsyncioExecutor as GQLAIOExecuto
 from logging import getLogger
 from os import environ
 from pymongo.errors import ConnectionFailure as MongoDBConnectionFailure
+from signal import SIGINT, SIGTERM
 import sys
 
 from .configuration import Configuration
 from .connections import AlertWebhooks
-from .views import routes
-from .model import InitialConnectionError, get_model
 from .graphql import graphql_schema
+from .model import InitialConnectionError, get_model
+from .views import routes
 
 
 logger = getLogger(__name__)
@@ -63,7 +64,7 @@ async def async_main(conf):
         alert_webhooks = await stack.enter_async_context(AlertWebhooks(conf.alert_webhooks))
         model = await stack.enter_async_context(get_model(conf, alert_webhooks=alert_webhooks))
         alert_webhooks.set_model(model)
-        app = web.Application()
+        app = Application()
         app['model'] = model
         app.router.add_routes(routes)
         GraphQLView.attach(
@@ -73,7 +74,24 @@ async def async_main(conf):
                 graphiql=True,
                 enable_async=True,
                 executor=GQLAIOExecutor())
-        from aiohttp.web import _run_app
-        # ^^^ https://github.com/aio-libs/aiohttp/blob/baddbfe182a5731d5963438f317cbcce4c094f39/aiohttp/web.py#L261
-        logger.debug('Listening on http://localhost:%s', conf.port)
-        await _run_app(app, port=conf.port)
+        runner = AppRunner(app)
+        await runner.setup()
+        site = TCPSite(runner, conf.bind_host, conf.bind_port)
+        await site.start()
+        stop_event = asyncio.Event()
+        asyncio.get_running_loop().add_signal_handler(SIGINT, stop_event.set)
+        asyncio.get_running_loop().add_signal_handler(SIGTERM, stop_event.set)
+        logger.debug('Listening on http://%s:%s', conf.bind_host or 'localhost', conf.bind_port)
+        await stop_event.wait()
+        logger.debug('Cleanup...')
+        t = asyncio.create_task(log_still_running_tasks())
+        await runner.cleanup()
+        t.cancel()
+        logger.debug('Cleanup done')
+
+
+async def log_still_running_tasks():
+    while True:
+        await asyncio.sleep(3)
+        tasks = '\n'.join(f'{n:2d}. {smart_repr(t)}' for n, t in enumerate(asyncio.all_tasks(), start=1))
+        logger.debug('Still running tasks:\n%s', tasks)

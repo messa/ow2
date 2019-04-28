@@ -14,7 +14,8 @@ class Configuration:
         logger.debug('Reading configuration from %s', cfg_path)
         cfg = yaml_load(cfg_path.read_text())['overwatch_hub']
         get_list = lambda key: cfg.get(key) or []
-        self.port = int(cfg.get('port') or 8485)
+        self.bind_host = cfg.get('bind_host') or ''
+        self.bind_port = int(cfg.get('port') or 8485)
         self.mongodb = MongoDB(cfg['mongodb'], cfg_dir)
         self.alert_webhooks = [AlertWebhook(x) for x in get_list('alert_webhooks')]
 
