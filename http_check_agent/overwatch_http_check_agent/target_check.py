@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from logging import getLogger
 from reprlib import repr as smart_repr
 from socket import getfqdn
+from ssl import SSLError, SSLCertVerificationError
 from time import monotonic as monotime
 from time import time
 
@@ -20,13 +21,13 @@ async def check_target(session, conf, target):
         #async with session.get(target.url) as r:
         #    logger.debug('GET %s -> %r', target.url, r)
         await check_target_once(session, conf, target, interval_s)
+        logger.debug('Sleeping for %d s', interval_s)
         await sleep(interval_s)
 
 
 async def check_target_once(session, conf, target, interval_s):
     try:
         logger.debug('check_target_once: %s', target)
-        hostname, ips = await get_url_ip_addresses(target.url)
         report = {
             'date': datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
             'label': generate_label(conf, target),
@@ -37,10 +38,28 @@ async def check_target_once(session, conf, target, interval_s):
                     '__unit': 'seconds',
                 },
                 'by_ip': {},
+                'error': {
+                    '__value': None,
+                    '__check': {'state': 'green'},
+                },
             },
         }
-        for ip in ips:
-            await check_target_ip(conf, target, report, hostname, ip)
+        try:
+            hostname, ips = await get_url_ip_addresses(target.url)
+        except Exception as e:
+            report['state']['error'] = {
+                '__value': f'Failed to resolve hostname of {target.url!r}: {e!r}',
+                '__check': {'state': 'red'},
+            }
+        else:
+            if not ips:
+                report['state']['error'] = {
+                    '__value': f'Hostname {hostname!r} does not resolve to IP addresses',
+                    '__check': {'state': 'red'},
+                }
+            else:
+                for ip in ips:
+                    await check_target_ip(conf, target, report, hostname, ip)
         report['state']['watchdog'] = {
             '__watchdog': {
                 'deadline': int((time() + interval_s + 15) * 1000),
@@ -77,7 +96,7 @@ async def check_target_ip(conf, target, report, hostname, ip):
                 }
                 data = await response.read()
                 duration = monotime() - start_time
-                duration_threshold = target.duration_threshold or conf.duration_threshold
+                duration_threshold = target.duration_threshold or conf.default_duration_threshold
                 duration_ok = timedelta(seconds=duration) <= duration_threshold
                 ip_report['duration'] = {
                     '__value': duration,
@@ -110,9 +129,16 @@ async def check_target_ip(conf, target, report, hostname, ip):
                     }
     except Exception as e:
         logger.info('GET %r via %s failed: %r', target.url, ip, e)
+        if isinstance(e, SSLError):
+            if 'certificate has expired' in str(e):
+                msg = 'SSL certificate has expired'
+            else:
+                msg = f'SSLError: {e}'
+        else:
+            msg = str(e)
         ip_report['error'] = {
-            '__value': str(e),
-            '__alert': {
+            '__value': msg,
+            '__check': {
                 'state': 'red',
             },
         }

@@ -11,9 +11,9 @@ class Configuration:
         cfg = yaml_load(cfg_path.read_text())['overwatch_http_check_agent']
         self.report_url = cfg['report_url']
         self.report_token = cfg['report_token']
-        self.default_interval = timedelta(seconds=30)
+        self.default_interval = parse_interval(cfg.get('interval') or 30)
         self.default_label = {}
-        self.duration_threshold = parse_interval(cfg.get('duration_threshold') or 5)
+        self.default_duration_threshold = parse_interval(cfg.get('duration_threshold') or 5)
         self.targets = [Target(x) for x in cfg['targets']]
 
 
