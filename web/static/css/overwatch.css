@@ -148,3 +148,25 @@ a.LabelPill {
   margin-top: 2px;
   margin-bottom: 2px;
 }
+
+/* CheckCount */
+
+.CheckCount {
+  margin-left: 4px;
+  font-weight: 600;
+  color: #fff;
+  display: inline-block;
+  min-height: 16px;
+  min-width: 16px;
+  text-align: center;
+  border-radius: 8px;
+}
+.CheckCount:first-child {
+  margin-left: 0;
+}
+.CheckCount.green {
+  background-color: #0c0;
+}
+.CheckCount.red {
+  background-color: #d00;
+}

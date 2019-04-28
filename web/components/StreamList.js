@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createRefetchContainer, graphql } from 'react-relay'
 import DateTime from './util/DateTime'
 import LabelFromJSON from './util/LabelFromJSON'
+import CheckCount from './CheckCount'
 
 const refetchIntervalMS = 3 * 1000
 
@@ -82,10 +83,10 @@ class StreamList extends React.Component {
                 </td>
                 <td>
                   {!stream.lastSnapshot.greenCheckCount || (
-                    <span className='greenCheckCount'>{JSON.stringify(stream.lastSnapshot.greenCheckCount)}</span>
+                    <CheckCount color='green'>{stream.lastSnapshot.greenCheckCount}</CheckCount>
                   )}
                   {!stream.lastSnapshot.redCheckCount || (
-                    <span className='redCheckCount'>{stream.lastSnapshot.redCheckCount}</span>
+                    <CheckCount color='red'>{stream.lastSnapshot.redCheckCount}</CheckCount>
                   )}
                 </td>
                 <td className='lastUpdatedCol'><DateTime key={this.state.refetchCount} value={stream.lastSnapshotDate} /></td>
@@ -95,26 +96,6 @@ class StreamList extends React.Component {
         </table>
 
         <style jsx>{`
-          .greenCheckCount,
-          .redCheckCount {
-            margin-left: 5px;
-            font-weight: 600;
-            color: #fff;
-            display: inline-block;
-            min-width: 16px;
-            text-align: center;
-            border-radius: 8px;
-          }
-          .greenCheckCount:first-child,
-          .redCheckCount:first-child {
-            margin-left: 0;
-          }
-          .greenCheckCount {
-            background-color: #0c0;
-          }
-          .redCheckCount {
-            background-color: #d00;
-          }
           @media (max-width: 1000px) {
             .StreamList table .lastUpdatedCol {
               display: none;
