@@ -30,6 +30,7 @@ code {
   margin: 0px;
   border-radius: 0px;
   font-size: inherit;
+  white-space: pre-line;
 }
 
 td, th {
