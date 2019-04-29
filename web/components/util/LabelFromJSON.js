@@ -35,7 +35,7 @@ export default class LabelFromJSON extends React.Component {
     return (
       <span className='LabelFromJSON'>
         {labelKeys.map(k => (
-          <LabelPill key={k} label={k} value={label[k]} href='/' />
+          <LabelPill key={k} labelKey={k} labelValue={label[k]} />
         ))}
       </span>
     )

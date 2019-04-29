@@ -10,8 +10,8 @@ const refetchIntervalMS = 3 * 1000
 function sortStreams(streamNodes, sortBy) {
   const sortParts = sortBy.split(',')
   streamNodes.sort((a, b) => {
-    const aLabel = JSON.parse(a['labelJSON'])
-    const bLabel = JSON.parse(b['labelJSON'])
+    const aLabel = a.label
+    const bLabel = b.label
     for (let part of sortParts) {
       if (aLabel[part] && !bLabel[part]) return -1
       if (!aLabel[part] && bLabel[part]) return 1
@@ -55,9 +55,16 @@ class StreamList extends React.Component {
   }
 
   render() {
-    const { query, sortBy } = this.props
-    const streamNodes = query.streams && query.streams.edges.map(e => e.node)
+    const { query, labelFilter, sortBy } = this.props
+    let streamNodes = query.streams && query.streams.edges.map(e => e.node)
     if (!streamNodes) return null
+    streamNodes = streamNodes.map(n => ({ label: JSON.parse(n.labelJSON), ...n }))
+    if (labelFilter) {
+      for (const k of Object.keys(labelFilter)) {
+        const v = labelFilter[k]
+        streamNodes = streamNodes.filter(node => node.label[k] === v)
+      }
+    }
     sortStreams(streamNodes, sortBy)
     return (
       <div className='StreamList'>
