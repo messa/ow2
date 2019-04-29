@@ -5,7 +5,7 @@ import AlertTable from './AlertTable'
 
 const refetchIntervalMS = 3 * 1000
 
-class InactiveAlertList extends React.Component {
+class ActiveUnacknowledgedAlertList extends React.Component {
 
   state = {
     refetchCount: null,
@@ -38,11 +38,11 @@ class InactiveAlertList extends React.Component {
 
   render() {
     const { query } = this.props
-    const { inactiveAlerts } = query
+    const { activeUnacknowledgedAlerts } = query
     const { refetchCount } = this.state
     return (
-      <div className='InactiveAlertList'>
-        <AlertTable alerts={inactiveAlerts} showEndDate={true} />
+      <div className='ActiveUnacknowledgedAlertList'>
+        <AlertTable alerts={activeUnacknowledgedAlerts} />
       </div>
     )
   }
@@ -50,18 +50,18 @@ class InactiveAlertList extends React.Component {
 }
 
 export default createRefetchContainer(
-  InactiveAlertList,
+  ActiveUnacknowledgedAlertList,
   {
     query: graphql`
-      fragment InactiveAlertList_query on Query {
-        inactiveAlerts {
+      fragment ActiveUnacknowledgedAlertList_query on Query {
+        activeUnacknowledgedAlerts {
           ...AlertTable_alerts
         }
       }
     `
   },
   graphql`
-    query InactiveAlertListQuery {
-      ...InactiveAlertList_query
+    query ActiveUnacknowledgedAlertListQuery {
+      ...ActiveUnacknowledgedAlertList_query
     }
   `)

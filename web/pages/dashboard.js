@@ -4,7 +4,7 @@ import { graphql } from 'react-relay'
 import withData from '../lib/withData'
 import Layout from '../components/Layout'
 import Container from '../components/ui/Container'
-import ActiveAlertList from '../components/alerts/ActiveAlertList'
+import ActiveUnacknowledgedAlertList from '../components/alerts/ActiveUnacknowledgedAlertList'
 
 class DashboardPage extends React.Component {
 
@@ -12,8 +12,8 @@ class DashboardPage extends React.Component {
     return (
       <Layout activeItem='dashboard'>
         <Container>
-          <h2>Active alerts</h2>
-          <ActiveAlertList query={this.props} />
+          <h2>Active unacknowledged alerts</h2>
+          <ActiveUnacknowledgedAlertList query={this.props} />
         </Container>
       </Layout>
     )
@@ -26,7 +26,7 @@ export default withData(
   {
     query: graphql`
       query dashboardQuery {
-        ...ActiveAlertList_query
+        ...ActiveUnacknowledgedAlertList_query
       }
     `
   })
