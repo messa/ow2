@@ -31,8 +31,18 @@ class Alerts:
         return Alert(doc, active=active)
 
     async def list_active(self):
-        docs = await self._c_active.find({}).to_list(length=None)
+        return await self._list_active({})
+
+    async def _list_active(self, query, sort=None, limit=100):
+        sort = sort or [('first_snapshot_id', DESC)]
+        docs = await self._c_active.find(query, sort=sort, limit=limit).to_list(length=None)
         return [Alert(doc, active=True) for doc in docs]
+
+    async def list_active_unacknowledged(self):
+        return await self._list_active({'acknowledged_date': None})
+
+    async def list_active_acknowledged(self):
+        return await self._list_active({'acknowledged_date': {'$ne': None}})
 
     async def list_inactive(self):
         t = monotime()

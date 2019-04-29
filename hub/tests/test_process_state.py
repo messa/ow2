@@ -77,7 +77,7 @@ async def test_alert_is_created(model, sample_snapshot_loaded):
 async def test_graphql_streams(model, sample_snapshot_loaded, graphql, remove_ids):
     query = '''
         query TestQuery {
-            activeAlerts {
+            activeUnacknowledgedAlerts {
                 edges {
                     node {
                         alertId
@@ -86,6 +86,13 @@ async def test_graphql_streams(model, sample_snapshot_loaded, graphql, remove_id
                         itemPath
                         firstSnapshotId
                         lastSnapshotId
+                    }
+                }
+            }
+            activeAcknowledgedAlerts {
+                edges {
+                    node {
+                        alertId
                     }
                 }
             }
@@ -123,7 +130,9 @@ async def test_graphql_streams(model, sample_snapshot_loaded, graphql, remove_id
     data = await graphql(query)
     data = remove_ids(data)
     assert yaml_dump(data) == dedent('''\
-        activeAlerts:
+        activeAcknowledgedAlerts:
+          edges: []
+        activeUnacknowledgedAlerts:
           edges:
           - node:
               alertId: alertId000
