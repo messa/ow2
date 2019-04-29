@@ -1,13 +1,16 @@
-from aiohttp import ClientSession, TCPConnector
+from aiohttp import ClientSession, TCPConnector, Fingerprint
 from aiohttp.resolver import AsyncResolver
 from asyncio import Semaphore, create_task, sleep
 from datetime import datetime, timedelta
 from logging import getLogger
+from pytz import utc
 from reprlib import repr as smart_repr
 from socket import getfqdn
 from ssl import SSLError, SSLCertVerificationError
 from time import monotonic as monotime
 from time import time
+
+from .util import parse_datetime
 
 
 logger = getLogger(__name__)
@@ -83,7 +86,7 @@ async def check_target_ip(conf, target, report, hostname, ip):
     }
     start_time = monotime()
     try:
-        conn = TCPConnector(resolver=CustomResolver(hostname, ip))
+        conn = CustomTCPConnector(resolver=CustomResolver(hostname, ip))
         async with ClientSession(connector=conn) as session:
             start_time = monotime()
             async with session.get(target.url) as response:
@@ -111,6 +114,7 @@ async def check_target_ip(conf, target, report, hostname, ip):
                 }
                 ip_report['redirect_count'] = len(response.history)
                 ip_report['final_url'] = str(response.url)
+                ip_report['ssl_certificate'] = get_ssl_cert_report(conn.get_last_cert())
                 # try:
                 #     ip_report['response_preview'] = data.decode()[:100]
                 # except Exception:
@@ -146,6 +150,83 @@ async def check_target_ip(conf, target, report, hostname, ip):
         }
     ip_report.setdefault('duration', {'__value': monotime() - start_time})
     report['state']['by_ip'][ip] = ip_report
+
+
+class CustomTCPConnector (TCPConnector):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.__fingerprint_obj = _FingerprintObj()
+
+    def _get_ssl_context(self, req):
+        if req.is_ssl():
+            return self._make_ssl_context(True)
+        else:
+            return None
+
+    def _get_fingerprint(self, req):
+        return self.__fingerprint_obj
+
+    def get_last_cert(self):
+        return self.__fingerprint_obj.last_cert
+
+
+class _FingerprintObj:
+
+    def __init__(self):
+        self.last_cert = None
+
+    def check(self, transport):
+        if not transport.get_extra_info('sslcontext'):
+            return
+        sslobj = transport.get_extra_info('ssl_object')
+        self.last_cert = sslobj.getpeercert(binary_form=False)
+
+
+def get_ssl_cert_report(cert):
+    logger.debug('cert: %r', cert)
+    if cert is None:
+        return None
+    if not cert:
+        # Docs: "If the certificate was not validated, the dict is empty."
+        raise Exception('Certificate not validated')
+    report = {k: _ssl_cert_value(v) for k, v in cert.items()}
+
+    expire_dt = parse_datetime(report['notAfter'])
+    now = utc.localize(datetime.utcnow())
+    if expire_dt < now + timedelta(days=10):
+        expire_state = 'red'
+    elif expire_dt < now + timedelta(days=20):
+        expire_state = 'yellow'
+    else:
+        expire_state = 'green'
+
+    report['expire_date'] = {
+        '__value': expire_dt.isoformat(),
+        '__check': {
+            'state': expire_state,
+        },
+    }
+
+    return report
+
+
+def _ssl_cert_value(obj):
+    '''
+    Convert stuff like ((('commonName', 'messa.cz'),),) to something more readable
+    '''
+    # TODO: redo this :)
+    while isinstance(obj, tuple) and len(obj) == 1:
+        obj, = obj
+    if isinstance(obj, tuple):
+        parts = [_ssl_cert_value(v) for v in obj]
+        #parts = ['[{}]'.format(p) if isinstance(p, tuple) else p for p in parts]
+        if len(parts) == 2:
+            k, v = parts
+            if '=' not in k and '=' not in v:
+                return '{}={}'.format(k, v)
+        return ','.join('({})'.format(part) for part in parts)
+    return str(obj)
 
 
 def generate_label(conf, target):
