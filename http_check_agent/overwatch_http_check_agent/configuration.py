@@ -12,7 +12,7 @@ class Configuration:
         self.report_url = cfg['report_url']
         self.report_token = cfg['report_token']
         self.default_interval = parse_interval(cfg.get('interval') or 30)
-        self.default_label = {}
+        self.default_label = cfg.get('label') or {}
         self.default_duration_threshold = parse_interval(cfg.get('duration_threshold') or 5)
         self.targets = [Target(x) for x in cfg['targets']]
 
@@ -22,7 +22,7 @@ class Target:
     def __init__(self, cfg):
         self.url = cfg['url']
         self.interval = parse_interval(cfg.get('interval'))
-        self.label = {}
+        self.label = cfg.get('label') or {}
         self.check_response_contains = cfg.get('check_response_contains')
         self.duration_threshold = parse_interval(cfg.get('duration_threshold'))
 
