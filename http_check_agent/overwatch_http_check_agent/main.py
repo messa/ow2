@@ -1,6 +1,6 @@
 from aiohttp import ClientSession
 from argparse import ArgumentParser
-from asyncio import FIRST_COMPLETED, Event, TimeoutError
+from asyncio import FIRST_COMPLETED, Event, Semaphore, TimeoutError
 from asyncio import create_task, get_running_loop, run, sleep, wait
 from contextlib import AsyncExitStack
 from logging import getLogger
@@ -48,11 +48,12 @@ async def async_main(conf):
         stop_event = Event()
         get_running_loop().add_signal_handler(SIGINT, stop_event.set)
         get_running_loop().add_signal_handler(SIGTERM, stop_event.set)
+        send_report_semaphore = Semaphore(2)
         check_tasks = []
         try:
             # create asyncio task for each configured check target
             for target in conf.targets:
-                check_tasks.append(create_task(check_target(session, conf, target)))
+                check_tasks.append(create_task(check_target(session, conf, target, send_report_semaphore)))
                 await sleep(.1)
             # all set up and (hopefully) running, now just periodically check
             done, pending = await wait(check_tasks + [stop_event.wait()], return_when=FIRST_COMPLETED)

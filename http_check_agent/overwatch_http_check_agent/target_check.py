@@ -1,6 +1,6 @@
 from aiohttp import ClientSession, TCPConnector, Fingerprint
 from aiohttp.resolver import AsyncResolver
-from asyncio import Semaphore, create_task, sleep
+from asyncio import TimeoutError, shield, sleep, wait_for
 from datetime import datetime, timedelta
 from logging import getLogger
 from pytz import utc
@@ -16,19 +16,19 @@ from .util import parse_datetime
 logger = getLogger(__name__)
 
 
-async def check_target(session, conf, target):
+async def check_target(session, conf, target, send_report_semaphore):
     logger.debug('check_target: %s', target)
     interval = target.interval or conf.default_interval
     interval_s = interval.total_seconds()
     while True:
         #async with session.get(target.url) as r:
         #    logger.debug('GET %s -> %r', target.url, r)
-        await check_target_once(session, conf, target, interval_s)
+        await check_target_once(session, conf, target, interval_s, send_report_semaphore)
         logger.debug('Sleeping for %d s', interval_s)
         await sleep(interval_s)
 
 
-async def check_target_once(session, conf, target, interval_s):
+async def check_target_once(session, conf, target, interval_s, send_report_semaphore):
     try:
         logger.debug('check_target_once: %s', target)
         report = {
@@ -68,7 +68,10 @@ async def check_target_once(session, conf, target, interval_s):
                 'deadline': int((time() + interval_s + 15) * 1000),
             },
         }
-        create_task(send_report(session, conf, report))
+        try:
+            await wait_for(shield(send_report(session, conf, report, send_report_semaphore)), 1)
+        except TimeoutError:
+            logger.debug('send_report is taking too long, not waiting for it')
     except Exception as e:
         logger.exception('check_target_once failed: %r; target: %s', e, target)
         raise Exception(f'check_target_once failed: {e!r}') from None
@@ -288,10 +291,9 @@ class CustomResolver:
             return result
 
 
-send_report_semaphore = Semaphore(2)
 
 
-async def send_report(session, conf, report):
+async def send_report(session, conf, report, send_report_semaphore):
     try:
         async with send_report_semaphore:
             logger.debug('Sending report to %s', conf.report_url)
