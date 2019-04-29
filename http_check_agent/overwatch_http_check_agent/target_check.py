@@ -109,6 +109,8 @@ async def check_target_ip(conf, target, report, hostname, ip):
                     '__value': len(data),
                     '__unit': 'bytes',
                 }
+                ip_report['redirect_count'] = len(response.history)
+                ip_report['final_url'] = str(response.url)
                 # try:
                 #     ip_report['response_preview'] = data.decode()[:100]
                 # except Exception:
