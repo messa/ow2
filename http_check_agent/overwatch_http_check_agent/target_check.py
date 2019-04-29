@@ -123,7 +123,7 @@ async def check_target_ip(conf, target, report, hostname, ip):
                     'GET %r -> %s %s in %.3f s',
                     target.url, response.status, smart_repr(data), duration)
                 if target.check_response_contains:
-                    present = to_bytes(check_response_contains) in data
+                    present = to_bytes(target.check_response_contains) in data
                     ip_report['check_response_contains'] = {
                         'content': target.check_response_contains,
                         'present': {
