@@ -61,7 +61,7 @@ class AlertTable extends React.Component {
               </td>
               <td>{alert.alertType}</td>
               <td>{alert.itemPath.join(' > ')}</td>
-              <td>
+              <td style={{ maxWidth: 500 }}>
                 <SnapshotItemValue
                   valueJSON={alert.lastItemValueJSON}
                   unit={alert.lastItemUnit}

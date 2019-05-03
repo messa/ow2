@@ -22,7 +22,7 @@ export default ({ item, valueJSON, unit }) => {
     return round(value * 1000000) / 1000000
   }
   return (
-    <code style={{ fontSize: 12 }}>
+    <code style={{ fontSize: 12, wordBreak: 'break-word' }}>
       {valueJSON}
     </code>
   )
