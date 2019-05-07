@@ -1,5 +1,4 @@
 import React from 'react'
-import Link from 'next/link'
 import { graphql } from 'react-relay'
 import withData from '../lib/withData'
 import Layout from '../components/Layout'
