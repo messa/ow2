@@ -67,9 +67,9 @@ async def async_main(conf):
 
 def setup_logging(verbose):
     from logging import DEBUG, WARNING, Formatter, StreamHandler, basicConfig, getLogger
-    log_format = '%(asctime)s %(name)-31s %(levelname)5s: %(message)s'
+    from .util.logging import CustomFormatter
     getLogger().setLevel(DEBUG)
     h = StreamHandler()
     h.setLevel(DEBUG if verbose else WARNING)
-    h.setFormatter(Formatter(log_format))
+    h.setFormatter(CustomFormatter(strip_name_prefix=__name__.split('.')[0]))
     getLogger().addHandler(h)
