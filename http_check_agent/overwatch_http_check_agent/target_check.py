@@ -295,8 +295,6 @@ class CustomResolver:
             return result
 
 
-
-
 async def send_report(session, conf, report, send_report_semaphore):
     try:
         async with send_report_semaphore:
