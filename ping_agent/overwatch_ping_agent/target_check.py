@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from itertools import count
+import os
 import re
 from reprlib import repr as smart_repr
 from socket import getfqdn
@@ -128,7 +129,7 @@ def check_state_from_packet_loss_pct(packet_loss_pct):
 def generate_label(conf, target):
     label = {
         'agent': 'ping',
-        'host': getfqdn(),
+        'host': os.environ.get('REAL_HOST') or getfqdn(),
         'address': target.address,
     }
     for src in conf.default_label, target.label:
