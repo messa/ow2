@@ -1,15 +1,18 @@
 from aiohttp import ClientSession
 from argparse import ArgumentParser
 from asyncio import FIRST_COMPLETED, Event, Semaphore, TimeoutError
-from asyncio import create_task, get_running_loop, run, sleep, wait, all_tasks, current_task
-from contextlib import AsyncExitStack
+from asyncio import sleep, wait
+try:
+    from asyncio import all_tasks, current_task
+except ImportError:
+    all_tasks = current_task = None
 from os import environ
 from signal import SIGINT, SIGTERM
 import sys
 
 from .configuration import Configuration
 from .target_check import check_target
-from .util import get_logger
+from .util import get_logger, create_task, get_running_loop, run, AsyncExitStack
 
 
 logger = get_logger(__name__)
@@ -69,14 +72,15 @@ async def async_main(conf):
             if not stop_event.is_set():
                 raise sys.exit('Some task(s) unexpectedly finished: {!r}'.format(done))
         finally:
-            logger.debug('Cleanup...')
-            remaining_tasks = [t for t in all_tasks() if t is not current_task()]
-            if remaining_tasks:
-                await sleep(0.1)
-                for t in remaining_tasks:
-                    logger.debug('Cancelling %r', t)
-                    t.cancel()
-                await wait(remaining_tasks)
+            if all_tasks is not None:
+                logger.debug('Cleanup...')
+                remaining_tasks = [t for t in all_tasks() if t is not current_task()]
+                if remaining_tasks:
+                    await sleep(0.1)
+                    for t in remaining_tasks:
+                        logger.debug('Cancelling %r', t)
+                        t.cancel()
+                    await wait(remaining_tasks)
 
 
 def setup_logging(verbose):

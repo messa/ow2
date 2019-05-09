@@ -2,4 +2,3 @@ aiohttp
 aiodns
 cchardet
 pyyaml
-pytz

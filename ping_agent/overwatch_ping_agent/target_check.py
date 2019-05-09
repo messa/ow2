@@ -1,18 +1,13 @@
-from aiohttp import ClientSession, TCPConnector, Fingerprint
-from aiohttp.resolver import AsyncResolver
-from asyncio import TimeoutError, shield, sleep, wait_for, create_task, current_task
 from datetime import datetime, timedelta
 from itertools import count
-from pytz import utc
 import re
 from reprlib import repr as smart_repr
 from socket import getfqdn
-from ssl import SSLError, SSLCertVerificationError
 from time import monotonic as monotime
 from time import time
 
 from .report import send_report
-from .util import get_logger, add_log_context, parse_datetime
+from .util import get_logger, add_log_context, create_task
 
 
 logger = get_logger(__name__)
@@ -24,7 +19,7 @@ async def check_target(session, conf, target, send_report_semaphore):
     with add_log_context('t{:02d}'.format(next(_log_target_id_counter))):
         logger.debug('check_target: %s', target)
         check_counter = count()
-        while not current_task().cancelled():
+        while True:
             with add_log_context('ch{:05d}'.format(next(check_counter))):
                 await check_target_once(session, conf, target, send_report_semaphore)
 
