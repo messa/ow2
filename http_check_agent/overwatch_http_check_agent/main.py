@@ -3,16 +3,16 @@ from argparse import ArgumentParser
 from asyncio import FIRST_COMPLETED, Event, Semaphore, TimeoutError
 from asyncio import create_task, get_running_loop, run, sleep, wait
 from contextlib import AsyncExitStack
-from logging import getLogger
 from os import environ
 from signal import SIGINT, SIGTERM
 import sys
 
 from .configuration import Configuration
 from .target_check import check_target
+from .util import get_logger
 
 
-logger = getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def http_check_agent_main():
@@ -66,7 +66,7 @@ async def async_main(conf):
 
 
 def setup_logging(verbose):
-    from logging import DEBUG, WARNING, Formatter, StreamHandler, basicConfig, getLogger
+    from logging import DEBUG, WARNING, StreamHandler, basicConfig, getLogger
     from .util.logging import CustomFormatter
     getLogger().setLevel(DEBUG)
     h = StreamHandler()

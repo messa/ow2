@@ -2,7 +2,7 @@ from aiohttp import ClientSession, TCPConnector, Fingerprint
 from aiohttp.resolver import AsyncResolver
 from asyncio import TimeoutError, shield, sleep, wait_for
 from datetime import datetime, timedelta
-from logging import getLogger
+from itertools import count
 from pytz import utc
 from reprlib import repr as smart_repr
 from socket import getfqdn
@@ -10,22 +10,25 @@ from ssl import SSLError, SSLCertVerificationError
 from time import monotonic as monotime
 from time import time
 
-from .util import parse_datetime
+from .util import parse_datetime, add_log_context, get_logger
 
 
-logger = getLogger(__name__)
+logger = get_logger(__name__)
+
+_log_target_id_counter = count()
 
 
 async def check_target(session, conf, target, send_report_semaphore):
-    logger.debug('check_target: %s', target)
-    interval = target.interval or conf.default_interval
-    interval_s = interval.total_seconds()
-    while True:
-        #async with session.get(target.url) as r:
-        #    logger.debug('GET %s -> %r', target.url, r)
-        await check_target_once(session, conf, target, interval_s, send_report_semaphore)
-        logger.debug('Sleeping for %d s', interval_s)
-        await sleep(interval_s)
+    with add_log_context(f't{next(_log_target_id_counter):02d}'):
+        logger.debug('check_target: %s', target)
+        interval = target.interval or conf.default_interval
+        interval_s = interval.total_seconds()
+        check_counter = count()
+        while True:
+            with add_log_context(f'ch{next(check_counter):05d}'):
+                await check_target_once(session, conf, target, interval_s, send_report_semaphore)
+            logger.debug('Sleeping for %d s', interval_s)
+            await sleep(interval_s)
 
 
 async def check_target_once(session, conf, target, interval_s, send_report_semaphore):
@@ -61,8 +64,9 @@ async def check_target_once(session, conf, target, interval_s, send_report_semap
                     '__check': {'state': 'red'},
                 }
             else:
-                for ip in ips:
-                    await check_target_ip(conf, target, report, hostname, ip)
+                for n, ip in enumerate(ips):
+                    with add_log_context(f'ip{n:02}'):
+                        await check_target_ip(conf, target, report, hostname, ip)
         report['state']['watchdog'] = {
             '__watchdog': {
                 'deadline': int((time() + interval_s + 15) * 1000),
@@ -144,7 +148,7 @@ async def check_target_ip(conf, target, report, hostname, ip):
             else:
                 msg = f'SSLError: {e}'
         else:
-            msg = str(e)
+            msg = str(e) or repr(e)
         ip_report['error'] = {
             '__value': msg,
             '__check': {
