@@ -31,16 +31,16 @@ async def check_target_once(session, conf, target, send_report_semaphore):
             'label': generate_label(conf, target),
             'state': {
                 'address': target.address,
-                'watchdog': {
-                    '__watchdog': {
-                        'deadline': int((time() + 90) * 1000),
-                    },
-                },
             },
         }
         await run_ping(report, target)
         #logger.debug('report: %r', report)
         report['date'] = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+        report['state']['watchdog'] = {
+            '__watchdog': {
+                'deadline': int((time() + 90) * 1000),
+            }
+        }
         create_task(send_report(session, conf, report, send_report_semaphore))
     except Exception as e:
         logger.exception('check_target_once failed: %r; target: %s', e, target)
