@@ -1,0 +1,5 @@
+overwatch_ping_agent:
+  report_url: http://localhost:8485/report
+  report_token: topsecret
+  targets:
+  - address: ip4.messa.cz
