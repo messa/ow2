@@ -1,6 +1,6 @@
 from aiohttp import ClientSession, TCPConnector, Fingerprint
 from aiohttp.resolver import AsyncResolver
-from asyncio import TimeoutError, shield, sleep, wait_for
+from asyncio import TimeoutError, shield, sleep, wait_for, create_task
 from datetime import datetime, timedelta
 from itertools import count
 from pytz import utc
@@ -10,6 +10,7 @@ from ssl import SSLError, SSLCertVerificationError
 from time import monotonic as monotime
 from time import time
 
+from .report import send_report
 from .util import parse_datetime, add_log_context, get_logger
 
 
@@ -27,7 +28,7 @@ async def check_target(session, conf, target, send_report_semaphore):
         while True:
             with add_log_context(f'ch{next(check_counter):05d}'):
                 await check_target_once(session, conf, target, interval_s, send_report_semaphore)
-            logger.debug('Sleeping for %d s', interval_s)
+            logger.debug('Sleeping for %s s', interval_s)
             await sleep(interval_s)
 
 
@@ -72,8 +73,9 @@ async def check_target_once(session, conf, target, interval_s, send_report_semap
                 'deadline': int((time() + interval_s + 15) * 1000),
             },
         }
+        t = create_task(send_report(session, conf, report, send_report_semaphore))
         try:
-            await wait_for(shield(send_report(session, conf, report, send_report_semaphore)), 1)
+            await wait_for(shield(t), 1)
         except TimeoutError:
             logger.debug('send_report is taking too long, not waiting for it')
     except Exception as e:
@@ -155,7 +157,10 @@ async def check_target_ip(conf, target, report, hostname, ip):
                 'state': 'red',
             },
         }
-    ip_report.setdefault('duration', {'__value': monotime() - start_time})
+    ip_report.setdefault('duration', {
+        '__value': monotime() - start_time,
+        '__unit': 'seconds',
+    })
     report['state']['by_ip'][ip] = ip_report
 
 
@@ -293,17 +298,3 @@ class CustomResolver:
             result = await self._parent.resolve(host, port, family)
             logger.debug('resolve(%r, %r, %r) -> %r', host, port, family, result)
             return result
-
-
-async def send_report(session, conf, report, send_report_semaphore):
-    try:
-        async with send_report_semaphore:
-            logger.debug('Sending report to %s', conf.report_url)
-            headers = {}
-            if conf.report_token:
-                headers['Authorization'] = 'Bearer ' + conf.report_token
-            async with session.post(conf.report_url, json=report, headers=headers) as r:
-                r.raise_for_status()
-                logger.debug('Report sent successfully')
-    except Exception as e:
-        logger.warning('Failed to send report to %s: %r', conf.report_url, e)
