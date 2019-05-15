@@ -57,10 +57,6 @@ def run_system_agent(conf):
 
 def run_system_agent_iteration(conf, sleep_interval):
     report_date = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-    report_label = {
-        'agent': 'system',
-        'host': getfqdn(),
-    }
     t0 = monotime()
     report_state = gather_state(conf)
     duration = monotime() - t0
@@ -79,7 +75,7 @@ def run_system_agent_iteration(conf, sleep_interval):
     }
 
     report_data = {
-        'label': report_label,
+        'label': generate_label(conf),
         'date': report_date,
         'state': report_state,
     }
@@ -95,6 +91,19 @@ def run_system_agent_iteration(conf, sleep_interval):
         logger.error('Failed to post report to %r: %r', conf.report_url, e)
         logger.info('Report token: %s...%s', conf.report_token[:3], conf.report_token[-3:])
         logger.info('Report data: %r', report_data)
+
+
+def generate_label(conf):
+    label = {
+        'agent': 'system',
+        'host': getfqdn(),
+    }
+    for k, v in conf.label.items():
+        if not v:
+            label.pop(k, None)
+        else:
+            label[k] = v
+    return label
 
 
 def gather_state(conf):
