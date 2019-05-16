@@ -14,10 +14,16 @@ class Configuration:
         logger.debug('Reading configuration from %s', cfg_path)
         cfg = yaml_load(cfg_path.read_text())['overwatch_hub']
         get_list = lambda key: cfg.get(key) or []
-        self.bind_host = cfg.get('bind_host') or ''
-        self.bind_port = int(cfg.get('port') or 8485)
+        self.http_interface = HTTPInterface(cfg.get('http_interface') or {})
         self.mongodb = MongoDB(cfg['mongodb'], cfg_dir)
         self.alert_webhooks = [AlertWebhook(x) for x in get_list('alert_webhooks')]
+
+
+class HTTPInterface:
+
+    def __init__(self, cfg):
+        self.bind_host = cfg.get('bind_host') or ''
+        self.bind_port = int(cfg.get('bind_port') or cfg.get('port') or 8485)
 
 
 class MongoDB:

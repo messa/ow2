@@ -68,20 +68,22 @@ async def async_main(conf):
         app['model'] = model
         app.router.add_routes(routes)
         GraphQLView.attach(
-                app,
-                route_path='/graphql',
-                schema=graphql_schema,
-                graphiql=True,
-                enable_async=True,
-                executor=GQLAIOExecutor())
+            app,
+            route_path='/graphql',
+            schema=graphql_schema,
+            graphiql=True,
+            enable_async=True,
+            executor=GQLAIOExecutor())
         runner = AppRunner(app)
         await runner.setup()
-        site = TCPSite(runner, conf.bind_host, conf.bind_port)
+        host = conf.http_interface.bind_host
+        port = conf.http_interface.bind_port
+        site = TCPSite(runner, host, port)
         await site.start()
         stop_event = asyncio.Event()
         asyncio.get_running_loop().add_signal_handler(SIGINT, stop_event.set)
         asyncio.get_running_loop().add_signal_handler(SIGTERM, stop_event.set)
-        logger.debug('Listening on http://%s:%s', conf.bind_host or 'localhost', conf.bind_port)
+        logger.debug('Listening on http://%s:%s', host or 'localhost', port)
         await stop_event.wait()
         logger.debug('Cleanup...')
         t = asyncio.create_task(log_still_running_tasks())
