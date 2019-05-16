@@ -7,11 +7,21 @@ from pymongo import ASCENDING as ASC
 from pymongo import DESCENDING as DESC
 from time import time
 
-from ..util import to_compact_json, to_utc, utc_datetime_from_ms_timestamp
+from ..util import to_compact_json, to_utc, utc_datetime_from_ms_timestamp, LRUCache
 from .helpers import to_objectid, parse_state, flatten_state_items_tree
 
 
 logger = getLogger(__name__)
+
+
+class _StreamSnapshotCaches:
+
+    def __init__(self):
+        self.snapshot_doc_cache = LRUCache()
+        self.state_doc_cache = LRUCache()
+        self.parse_state_cache = LRUCache()
+        self.flatten_state_items_cache = LRUCache()
+        self.state_items_cache = LRUCache()
 
 
 class StreamSnapshots:
@@ -19,9 +29,13 @@ class StreamSnapshots:
     def __init__(self, db):
         self._c_snapshots = db['streams.snapshots']
         self._c_states = db['streams.snapshots.states']
+        self._caches = _StreamSnapshotCaches()
 
     def _stream_snapshot(self, **kwargs):
-        return StreamSnapshot(c_states=self._c_states, **kwargs)
+        return StreamSnapshot(
+            c_states=self._c_states,
+            caches=self._caches,
+            **kwargs)
 
     async def create_optional_indexes(self):
         await self._c_snapshots.create_index([
@@ -55,10 +69,14 @@ class StreamSnapshots:
         return self._stream_snapshot(doc_snapshot=doc)
 
     async def get_by_id(self, snapshot_id):
-        doc = await self._c_snapshots.find_one({'_id': to_objectid(snapshot_id)})
+        snapshot_id = to_objectid(snapshot_id)
+        doc = await self._caches.snapshot_doc_cache.agetf(
+            str(snapshot_id),
+            lambda: self._c_snapshots.find_one({'_id': snapshot_id}))
         return self._stream_snapshot(doc_snapshot=doc)
 
     async def get_by_ids(self, snapshot_ids, load_state=True):
+        logger.debug('%s get_by_ids %s load_state: %r', self.__class__.__name__, snapshot_ids, load_state)
         snapshot_ids = [to_objectid(x) for x in snapshot_ids]
         q = {'_id': {'$in': snapshot_ids}}
         docs = await self._c_snapshots.find(q).to_list(length=None)
@@ -126,11 +144,13 @@ class StreamSnapshot:
         'id', 'date', 'stream_id',
         '_c_states', '_state_json', '_state_json_loading_task',
         '_raw_state_items_tree', '_raw_state_items', '_state_items',
+        '_caches',
     )
 
-    def __init__(self, c_states, doc_snapshot, doc_state=None):
+    def __init__(self, c_states, caches, doc_snapshot, doc_state=None):
         assert not doc_state or doc_snapshot['_id'] == doc_state['_id']
         self._c_states = c_states
+        self._caches = caches
         self.id = doc_snapshot['_id']
         self.date = to_utc(doc_snapshot['date'])
         self.stream_id = doc_snapshot['stream_id']
@@ -154,7 +174,9 @@ class StreamSnapshot:
         return await self._state_json_loading_task
 
     async def _do_load_state(self):
-        doc = await self._c_states.find_one({'_id': self.id})
+        doc = await self._caches.state_doc_cache.agetf(
+            f'{self.id}',
+            lambda: self._c_states.find_one({'_id': self.id}))
         self._state_json = doc['state_json']
 
     @property
@@ -166,26 +188,32 @@ class StreamSnapshot:
     @property
     def raw_state_items_tree(self):
         if self._raw_state_items_tree is None:
-            self._raw_state_items_tree = parse_state(self.state_json)
+            self._raw_state_items_tree = self._caches.parse_state_cache.getf(
+                f'{self.id} {hash(self.state_json)}',
+                lambda: parse_state(self.state_json))
         return self._raw_state_items_tree
 
     @property
     def raw_state_items(self):
         if self._raw_state_items is None:
-            self._raw_state_items = flatten_state_items_tree(self.raw_state_items_tree)
+            self._raw_state_items = self._caches.flatten_state_items_cache.getf(
+                f'{self.id} {hash(self.state_json)}',
+                lambda: flatten_state_items_tree(self.raw_state_items_tree))
         return self._raw_state_items
 
     @property
     def state_items(self):
         if self._state_items is None:
-            self._state_items = [
-                snapshot_item_from_raw(
-                    raw_item,
-                    snapshot_id=self.id,
-                    snapshot_date=self.date,
-                    stream_id=self.stream_id)
-                for raw_item in self.raw_state_items
-            ]
+            self._state_items = self._caches.state_items_cache.getf(
+                f'{self.id} {hash(self.state_json)}',
+                lambda: [
+                    snapshot_item_from_raw(
+                        raw_item,
+                        snapshot_id=self.id,
+                        snapshot_date=self.date,
+                        stream_id=self.stream_id)
+                    for raw_item in self.raw_state_items
+                ])
         return self._state_items
 
     @property
