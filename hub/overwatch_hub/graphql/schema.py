@@ -205,12 +205,14 @@ class Stream (ObjectType):
 
     async def resolve_last_snapshot(stream, info):
         model = get_model(info)
-        snapshot = await model.stream_snapshots.get_latest(stream_id=stream.id)
+        #snapshot = await model.stream_snapshots.get_latest(stream_id=stream.id)
+        snapshot = await model.stream_snapshots.get_by_id(stream.last_snapshot_id)
         return snapshot
 
     async def resolve_last_snapshot_date(stream, info):
         model = get_model(info)
-        snapshot = await model.stream_snapshots.get_latest(stream_id=stream.id)
+        #snapshot = await model.stream_snapshots.get_latest(stream_id=stream.id)
+        snapshot = await model.stream_snapshots.get_by_id(stream.last_snapshot_id)
         return snapshot.date
 
     async def resolve_snapshots(stream, info):
