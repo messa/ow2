@@ -1,5 +1,7 @@
-overwatch_ping_agent:
+overwatch_mongodb_stats_agent:
   report_url: http://localhost:8485/report
   report_token: topsecret
   targets:
-  - address: ip4.messa.cz
+  - uri: mongodb://joe:secret@127.0.0.1:27017/
+    ssl:
+      ca_cert_file: ca.cert
