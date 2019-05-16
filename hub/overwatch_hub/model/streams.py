@@ -1,6 +1,7 @@
 from bson import ObjectId
 from datetime import datetime
 from logging import getLogger
+from time import monotonic as monotime
 
 from ..util import random_str
 
@@ -71,8 +72,12 @@ class Streams:
         return self._obj(doc)
 
     async def list_all(self):
-        docs = await self._c_streams.find({}).to_list(10**4)
-        return [self._obj(d) for d in docs]
+        t = monotime()
+        try:
+            docs = await self._c_streams.find({}).to_list(10**4)
+            return [self._obj(d) for d in docs]
+        finally:
+            logger.debug('Streams.list_all() took %.3f s', monotime() - t)
 
 
 class Stream:
