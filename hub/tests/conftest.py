@@ -2,7 +2,7 @@ from collections import defaultdict
 from logging import DEBUG, basicConfig, getLogger
 import os
 from pathlib import Path
-from pytest import fixture
+from pytest import fixture, skip
 
 
 logger = getLogger(__name__)
@@ -37,6 +37,8 @@ def db_uri():
 @fixture
 async def db_client(db_uri):
     from motor.motor_asyncio import AsyncIOMotorClient
+    if db_uri == 'NONE':
+        skip('TEST_MONGO_URI is NONE - skipping tests depending on DB')
     mc_kwargs = dict(mongo_client_options)
     return AsyncIOMotorClient(db_uri, **mc_kwargs)
 
