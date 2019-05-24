@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/messa/ow2#readme",
   "dependencies": {
+    "d3": "^5.9.2",
     "express": "^4.17.0",
     "express-session": "^1.16.1",
     "graphql": "^14.3.1",
