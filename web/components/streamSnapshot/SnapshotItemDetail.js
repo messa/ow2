@@ -18,6 +18,13 @@ class SnapshotItemDetail extends React.Component {
         'itemPathJSON': JSON.stringify(item.path),
       }
     }
+    const graphHref = {
+      pathname: '/snapshotItemGraph',
+      query: {
+        'streamId': streamId,
+        'itemPathJSON': JSON.stringify(item.path),
+      }
+    }
     const searchAllHref = {
       pathname: '/snapshotItems',
       query: {
@@ -45,6 +52,10 @@ class SnapshotItemDetail extends React.Component {
 
             <Link href={historyHref}><a className='owButton'>
               History
+            </a></Link>
+
+            <Link href={graphHref}><a className='owButton'>
+              Graph
             </a></Link>
 
             <Link href={searchAllHref}><a className='owButton'>
