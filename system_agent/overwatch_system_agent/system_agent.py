@@ -121,7 +121,7 @@ def gather_state(conf):
 
 def gather_public_source_ip4():
     try:
-        r = rs.get('https://ip4.messa.cz/')
+        r = rs.get('https://ip4.messa.cz/', timeout=10)
         r.raise_for_status()
         return r.text.strip()
     except Exception as e:
@@ -131,7 +131,7 @@ def gather_public_source_ip4():
 
 def gather_public_source_ip6():
     try:
-        r = rs.get('https://ip6.messa.cz/')
+        r = rs.get('https://ip6.messa.cz/', timeout=10)
         r.raise_for_status()
         return r.text.strip()
     except Exception as e:
