@@ -55,7 +55,7 @@ async def async_main(conf):
             for target in conf.targets:
                 check_tasks.append(create_task(check_target(session, conf, target, send_report_semaphore)))
                 await sleep(.1)
-            # all set up and (hopefully) running, now just periodically check
+            # all set up and (hopefully) running
             done, pending = await wait(check_tasks + [stop_event.wait()], return_when=FIRST_COMPLETED)
             if not stop_event.is_set():
                 raise Exception(f'Some task(s) unexpectedly finished: {done!r}')
