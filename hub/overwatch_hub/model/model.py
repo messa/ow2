@@ -51,10 +51,10 @@ async def get_model(conf, **kwargs):
 
 class Model:
 
-    def __init__(self, db, alert_webhooks=None, create_optional_indexes=True):
+    def __init__(self, db, alert_webhooks=None, telegram_bot=None, create_optional_indexes=True):
         self.db = db
         self._create_optional_indexes = create_optional_indexes
-        self.alerts = Alerts(db, alert_webhooks=alert_webhooks)
+        self.alerts = Alerts(db, alert_webhooks=alert_webhooks, telegram_bot=telegram_bot)
         self.streams = Streams(db)
         self.stream_snapshots = StreamSnapshots(db)
         self.watchdog_checker = WatchdogChecker(model=self)

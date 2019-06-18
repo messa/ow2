@@ -14,8 +14,9 @@ logger = getLogger(__name__)
 
 class Alerts:
 
-    def __init__(self, db, alert_webhooks):
+    def __init__(self, db, alert_webhooks, telegram_bot):
         self._alert_webhooks = alert_webhooks
+        self._telegram_bot = telegram_bot
         self._c_active = db['alerts.active']
         self._c_inactive = db['alerts.inactive']
 
@@ -81,6 +82,8 @@ class Alerts:
             alert = Alert(doc=doc, active=True)
             if self._alert_webhooks:
                 self._alert_webhooks.new_alert_created(alert=alert)
+            if self._telegram_bot:
+                self._telegram_bot.new_alert_created(alert=alert)
             return
         await self._c_active.update_one(
             {
@@ -114,6 +117,8 @@ class Alerts:
             alert = Alert(doc=doc, active=False)
             if self._alert_webhooks:
                 self._alert_webhooks.alert_closed(alert=alert)
+            if self._telegram_bot:
+                self._telegram_bot.alert_closed(alert=alert)
 
 
 class Alert:

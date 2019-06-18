@@ -1,5 +1,5 @@
-import aiohttp
-import asyncio
+from aiohttp import ClientSession
+from asyncio import create_task, sleep
 from logging import getLogger
 
 from ..util import smart_repr
@@ -19,7 +19,7 @@ class AlertWebhooks:
         self._model = model
 
     async def __aenter__(self):
-        self._session = await aiohttp.ClientSession().__aenter__()
+        self._session = await ClientSession().__aenter__()
         return self
 
     async def __aexit__(self, exc_type, exc, tb):
@@ -29,12 +29,12 @@ class AlertWebhooks:
     def new_alert_created(self, alert):
         logger.debug('new_alert_created')
         for conf in self._alert_webhooks_conf:
-            asyncio.create_task(self._send_new_alert_created(conf, alert))
+            create_task(self._send_new_alert_created(conf, alert))
 
     def alert_closed(self, alert):
         logger.debug('alert_closed')
         for conf in self._alert_webhooks_conf:
-            asyncio.create_task(self._send_alert_closed(conf, alert))
+            create_task(self._send_alert_closed(conf, alert))
 
     async def _send_new_alert_created(self, webhook_conf, alert):
         logger.debug('_send_new_alert_created %s', webhook_conf)
@@ -43,7 +43,7 @@ class AlertWebhooks:
             if try_count > 5:
                 raise Exception('Too many tries')
             if try_count > 0:
-                await asyncio.sleep(2**try_count)
+                await sleep(2**try_count)
                 logger.debug('Trying again')
             try_count += 1
             stream = await self._model.streams.get_by_id(alert.stream_id)
@@ -67,7 +67,7 @@ class AlertWebhooks:
             if try_count > 5:
                 raise Exception('Too many tries')
             if try_count > 0:
-                await asyncio.sleep(2**try_count)
+                await sleep(2**try_count)
                 logger.debug('Trying again')
             try_count += 1
             stream = await self._model.streams.get_by_id(alert.stream_id)

@@ -17,6 +17,7 @@ class Configuration:
         self.http_interface = HTTPInterface(cfg.get('http_interface') or {})
         self.mongodb = MongoDB(cfg['mongodb'], cfg_dir)
         self.alert_webhooks = [AlertWebhook(x) for x in get_list('alert_webhooks')]
+        self.telegram_bot = TelegramBot(cfg.get('telegram_bot') or {})
 
 
 class HTTPInterface:
@@ -43,3 +44,10 @@ class AlertWebhook:
         self.url = cfg['url']
         self.format = cfg.get('format') or 'text'
         self.authorization_header = cfg.get('authorization_header')
+
+
+class TelegramBot:
+
+    def __init__(self, cfg):
+        self.token = cfg.get('token')
+        self.enabled = False if not self.token else cfg.get('enabled')

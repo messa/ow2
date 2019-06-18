@@ -4,3 +4,5 @@ overwatch_hub:
   alert_webhooks: []
     #- url: https://h2tg.messa.cz/send/-12345.rlabcdxyz
     #  format: text
+  telegram_bot:
+    token: '60121234:AAtsxyz'

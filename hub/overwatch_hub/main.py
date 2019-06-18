@@ -11,7 +11,7 @@ from signal import SIGINT, SIGTERM
 import sys
 
 from .configuration import Configuration
-from .connections import AlertWebhooks
+from .connections import AlertWebhooks, TelegramBot
 from .graphql import graphql_schema
 from .model import InitialConnectionError, get_model
 from .views import routes
@@ -62,8 +62,10 @@ def setup_logging():
 async def async_main(conf):
     async with AsyncExitStack() as stack:
         alert_webhooks = await stack.enter_async_context(AlertWebhooks(conf.alert_webhooks))
-        model = await stack.enter_async_context(get_model(conf, alert_webhooks=alert_webhooks))
+        telegram_bot = await stack.enter_async_context(TelegramBot(conf.telegram_bot))
+        model = await stack.enter_async_context(get_model(conf, alert_webhooks=alert_webhooks, telegram_bot=telegram_bot))
         alert_webhooks.set_model(model)
+        telegram_bot.set_model(model)
         app = Application()
         app['model'] = model
         app.router.add_routes(routes)
