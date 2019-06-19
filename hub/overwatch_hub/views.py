@@ -33,9 +33,9 @@ async def _just_log_exceptions(coro):
 async def post_telegram_webhook(request):
     logger.debug('post_telegram_webhook: %r', request)
     data = await request.json()
-    logger.debug('POST data: %%', data)
-    await request.app['telegram_bot'].process_update(auth_token, data)
-    return json_response({'ok': True})
+    logger.debug('POST data: %r', data)
+    response = await request.app['telegram_bot'].process_webhook(request.query, data)
+    return json_response(response)
 
 
 @routes.get('/dump-snapshots')

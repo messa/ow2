@@ -6,3 +6,4 @@ overwatch_hub:
     #  format: text
   telegram_bot:
     token: '60121234:AAtsxyz'
+    public_url: https://example.com/telegram-webhook

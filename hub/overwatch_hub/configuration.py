@@ -47,7 +47,12 @@ class AlertWebhook:
 
 
 class TelegramBot:
+    '''
+    telegram_bot configuration
+    '''
 
     def __init__(self, cfg):
         self.token = cfg.get('token')
-        self.enabled = False if not self.token else cfg.get('enabled')
+        self.public_url = cfg.get('public_url')
+        self.channel_id = cfg.get('channel_id')
+        self.enabled = bool(self.token and self.public_url)
