@@ -54,7 +54,7 @@ class AlertWebhooks:
                         r_text = await r.text()
                         logger.debug('Alert webhook POST %s -> %s', webhook_conf.url, smart_repr(r_text))
                 except Exception as e:
-                    logger.exception('Failed to send POST')
+                    logger.exception('Failed to send POST: %r', e)
                     continue
             else:
                 raise Exception(f'Unknown webhook conf format: {webhook_conf.format}')
@@ -78,7 +78,7 @@ class AlertWebhooks:
                         r_text = await r.text()
                         logger.debug('Alert webhook POST %s -> %s', webhook_conf.url, smart_repr(r_text))
                 except Exception as e:
-                    logger.exception('Failed to send POST')
+                    logger.exception('Failed to send POST: %r', e)
                     continue
             else:
                 raise Exception(f'Unknown webhook conf format: {webhook_conf.format}')

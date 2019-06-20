@@ -5,5 +5,5 @@ overwatch_hub:
     #- url: https://h2tg.messa.cz/send/-12345.rlabcdxyz
     #  format: text
   telegram_bot:
-    token: '60121234:AAtsxyz'
-    public_url: https://example.com/telegram-webhook
+    token: '601202735:AAFwH9UlFcTAr2UKtFI_ZmRwFZwcmIz80As' #  @test20181230bot
+    public_url: https://xdev.messa.cz/telegram-webhook

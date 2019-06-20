@@ -1,3 +1,4 @@
+import re
 import reprlib
 from secrets import token_urlsafe
 from simplejson import dumps as json_dumps
@@ -21,3 +22,10 @@ def random_str(length):
 
 def to_compact_json(obj):
     return json_dumps(obj, separators=(',', ':'))
+
+
+def sanitize_tokens(s):
+    '''
+    Replace secret token in URLs etc. by "..."
+    '''
+    return re.sub(r'([a-zA-Z0-9]{3})([a-zA-Z0-9]{6,})([a-zA-Z0-9]{3})', r'\1...\2', s)
