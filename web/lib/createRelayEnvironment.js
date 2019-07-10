@@ -3,13 +3,19 @@ import fetch from 'isomorphic-unfetch'
 
 let relayEnvironment = null
 
+function getServerAddress(req) {
+  if (!req) return ''
+  const port = req.socket.localPort
+  if (!port) throw new Error('No req.socket.localPort')
+  return `http://localhost:${port}`
+}
+
 function getFetchQuery(req) {
   // parameter req is from Next.js getInitialProps (server-only)
 
   // Define a function that fetches the results of an operation (query/mutation/etc)
   // and returns its results as a Promise
   return async function fetchQuery (operation, variables, cacheConfig, uploadables) {
-    const gqlEndpoint = process.browser ? '/graphql' : 'http://127.0.0.1:3000/graphql'
     const fetchOptions = {
       method: 'POST',
       headers: {
@@ -19,31 +25,16 @@ function getFetchQuery(req) {
       body: JSON.stringify({
         query: operation.text, // GraphQL text from input
         variables
-      })
+      }),
+      credentials: 'include'
     }
-    if (req) {
-      // we are in server Node.js (Next.js SSR)
-      const gqlEndpoint = req.configuration.get('overwatch_hub:url') + '/graphql'
-      const hubClientToken = req.configuration.get('overwatch_hub:client_token')
-      fetchOptions.headers['Authorization'] = `Bearer ${hubClientToken}`
-      fetchOptions.credentials = 'omit'
-      const res = await fetch(gqlEndpoint, fetchOptions)
-      if (res.status !== 200) {
-        const text = await res.text()
-        throw new Error(`SSR GQL POST ${gqlEndpoint} status ${res.status}: ${text}`)
-      }
-      return await res.json()
-    } else {
-      // we are in browser
-      fetchOptions.credentials = 'include'
-      const res = await fetch('/graphql', fetchOptions)
-      if (res.status !== 200) {
-        const text = await res.text()
-        throw new Error(`GQL POST ${gqlEndpoint} status ${res.status}: ${text}`)
-      }
-      return await res.json()
+    const gqlEndpoint = getServerAddress(req) + '/api/graphql'
+    const res = await fetch(gqlEndpoint, fetchOptions)
+    if (res.status !== 200) {
+      const text = await res.text()
+      throw new Error(`GQL POST ${gqlEndpoint} status ${res.status}: ${text}`)
     }
-
+    return await res.json()
   }
 }
 
