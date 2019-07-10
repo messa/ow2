@@ -22,11 +22,20 @@ if (confPath) {
   })
 }
 
+const port = parseInt(process.env.PORT, 10) || 8486
+
 nconf.defaults({
-  'port': parseInt(process.env.PORT, 10) || 8486,
+  'port': port,
   'overwatch_hub': {
     'url': 'http://127.0.0.1:8485',
     'client_token': "hubclienttopsecret",
+  },
+  'google_auth': {
+    // You can retrieve client_id and client_secret from the Google console.
+    'client_id': null,
+    'client_secret': null,
+    'callback_url': `http://localhost:${port}/auth/google/callback`,
+    'enabled_emails': ['somebody1@example.com', 'somebody2@example.com']
   }
 })
 
