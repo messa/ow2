@@ -10,7 +10,7 @@ class DashboardPage extends React.Component {
   render() {
     return (
       <Layout activeItem='dashboard'>
-        <Container>
+        <Container wide>
           <h2>Active unacknowledged alerts</h2>
           <ActiveUnacknowledgedAlertList query={this.props} />
         </Container>
