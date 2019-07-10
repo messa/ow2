@@ -9,20 +9,10 @@ const dev = process.env.NODE_ENV !== 'production'
 const app = next({ dev })
 const handle = app.getRequestHandler()
 
-function transparentFavicon(req, res) {
-  const b64 = 'AAABAAEAEBACAAEAAQCwAAAAFgAAACgAAAAQAAAAIAAAAAEAAQAAAAAAgAAA' +
-    'AAAAAAAAAAAAAAAAAAAAAAAAAAAA////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' +
-    'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//wAA//8AAP//AAD//wAA' +
-    '//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA'
-  res.set('Content-Type', 'image/x-icon')
-  res.send(Buffer.from(b64, 'base64'))
-}
-
 app.prepare().then(() => {
   const server = express()
 
   server.get('/', (req, res) => res.redirect('/dashboard'))
-  server.get('/favicon.ico', transparentFavicon)
 
   server.use(bodyParser.json())
 
