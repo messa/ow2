@@ -4,6 +4,8 @@ import { asyncWrapper, stripSlash } from '../../server/util'
 
 const hubUrl = stripSlash(configuration.get('overwatch_hub:url'))
 
+const tokenCookieName = configuration.get('token_cookie_name')
+
 export default asyncWrapper(async (req, res) => {
   console.info(`Processing ${req.method} ${req.url}`)
   const fetchOptions = {
@@ -13,6 +15,10 @@ export default asyncWrapper(async (req, res) => {
       'User-Agent': req.headers['user-agent'],
       'Content-Type': req.headers['content-type'],
     }
+  }
+  if (req.cookies[tokenCookieName]) {
+    console.debug('XXX cookie:', req.cookies[tokenCookieName])
+    fetchOptions.headers['Cookie'] = `${tokenCookieName}=${encodeURIComponent(req.cookies[tokenCookieName])}`
   }
   if (req.body) {
     fetchOptions.body = JSON.stringify(req.body)

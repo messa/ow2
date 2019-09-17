@@ -17,6 +17,7 @@ class Configuration:
         self.http_interface = HTTPInterface(cfg.get('http_interface') or {})
         self.mongodb = MongoDB(cfg['mongodb'], cfg_dir)
         self.alert_webhooks = [AlertWebhook(x) for x in get_list('alert_webhooks')]
+        self.google_oauth2 = GoogleOAuth2(cfg.get('google_oauth2') or {})
 
 
 class HTTPInterface:
@@ -43,3 +44,11 @@ class AlertWebhook:
         self.url = cfg['url']
         self.format = cfg.get('format') or 'text'
         self.authorization_header = cfg.get('authorization_header')
+
+
+class GoogleOAuth2:
+
+    def __init__(self, cfg):
+        self.client_id = cfg.get('client_id')
+        self.client_secret = cfg.get('client_secret')
+        self.user_info_url = 'https://www.googleapis.com/oauth2/v1/userinfo'

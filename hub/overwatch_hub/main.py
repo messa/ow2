@@ -1,4 +1,4 @@
-from aiohttp.web import Application, AppRunner, TCPSite
+from aiohttp.web import Application, AppRunner, TCPSite, middleware
 from aiohttp_graphql import GraphQLView
 from argparse import ArgumentParser
 import asyncio
@@ -10,6 +10,7 @@ from pymongo.errors import ConnectionFailure as MongoDBConnectionFailure
 from signal import SIGINT, SIGTERM
 import sys
 
+from .auth import get_user
 from .configuration import Configuration
 from .connections import AlertWebhooks
 from .graphql import graphql_schema
@@ -59,12 +60,20 @@ def setup_logging():
     # TODO: datetime UTC + non-locale formatting
 
 
+@middleware
+async def auth_middleware(request, handler):
+    request['get_user'] = lambda: get_user(request)
+    resp = await handler(request)
+    return resp
+
+
 async def async_main(conf):
     async with AsyncExitStack() as stack:
         alert_webhooks = await stack.enter_async_context(AlertWebhooks(conf.alert_webhooks))
         model = await stack.enter_async_context(get_model(conf, alert_webhooks=alert_webhooks))
         alert_webhooks.set_model(model)
-        app = Application()
+        app = Application(middlewares=[auth_middleware])
+        app['configuration'] = conf
         app['model'] = model
         app.router.add_routes(routes)
         GraphQLView.attach(
