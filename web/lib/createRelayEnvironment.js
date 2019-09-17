@@ -28,7 +28,8 @@ function getFetchQuery(req) {
       }),
       credentials: 'include'
     }
-    const gqlEndpoint = getServerAddress(req) + '/api/graphql'
+    const gqlEndpoint = req ? req.hubGQLEndpoint : getServerAddress(req) + '/api/graphql'
+    console.debug(`fetch ${gqlEndpoint}`)
     const res = await fetch(gqlEndpoint, fetchOptions)
     if (res.status !== 200) {
       const text = await res.text()

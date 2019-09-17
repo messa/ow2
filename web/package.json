@@ -4,9 +4,9 @@
   "description": "Web UI for Overwatch monitoring system",
   "main": "index.js",
   "scripts": {
-    "dev": "npm run relay && next -p 8486",
-    "build": "npm run relay:nowm && next build",
-    "start": "NODE_ENV=production next start",
+    "dev": "npm run relay && node -r @babel/register server",
+    "build": "npm run relay:nowm && next build && babel server --out-dir server.dist",
+    "start": "NODE_ENV=production node server.dist",
     "test": "echo \"Error: no test specified\" && exit 1",
     "schema": "get-graphql-schema http://localhost:8485/graphql > schema.graphql",
     "relay": "relay-compiler --src ./ --exclude '**/.next/**' '**/node_modules/**' '**/test/**'  '**/__generated__/**' --schema ./schema.graphql",
