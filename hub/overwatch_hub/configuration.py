@@ -18,6 +18,7 @@ class Configuration:
         self.mongodb = MongoDB(cfg['mongodb'], cfg_dir)
         self.alert_webhooks = [AlertWebhook(x) for x in get_list('alert_webhooks')]
         self.google_oauth2 = GoogleOAuth2(cfg.get('google_oauth2') or {})
+        self.access_token_cookie_name = 'ow2hubtoken'
 
 
 class HTTPInterface:

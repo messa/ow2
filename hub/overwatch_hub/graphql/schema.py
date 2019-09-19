@@ -389,7 +389,7 @@ class Query (ObjectType):
 class LoginViaGoogleOAuth2Token (Mutation):
 
     class Arguments:
-        google_access_token = String()
+        google_access_token = String(required=True)
 
     error_message = String()
     user = Field(User)
@@ -398,16 +398,25 @@ class LoginViaGoogleOAuth2Token (Mutation):
 
     async def mutate(root, info, access_token):
         model = get_model(info)
+        conf = get_configuration(info)
         try:
             res = login_via_google_oauth2_token(access_token=google_access_token, model=model)
             return LoginViaGoogleOAuth2Token(
                 error_message=None,
                 user=res.user,
-                token=token.handle)
-
+                access_token=token.handle,
+                access_token_cookie_name=conf.access_token_cookie_name)
         except AuthError as e:
-            token = None
-            error_message = str(e)
+            return LoginViaGoogleOAuth2Token(
+                error_message=str(e) or repr(e),
+                user=None,
+                access_token=None,
+                access_token_cookie_name=conf.access_token_cookie_name)
+
+
+class Mutations (ObjectType):
+
+    login_via_google_oauth2_token = LoginViaGoogleOAuth2Token.Field(name='loginViaGoogleOAuth2Token')
 
 
 def get_model(info):
@@ -416,4 +425,8 @@ def get_model(info):
     return info.context['model']
 
 
-graphql_schema = Schema(query=Query)
+def get_configuration(info):
+    return info.context['request'].app['configuration']
+
+
+graphql_schema = Schema(query=Query, mutation=Mutations)

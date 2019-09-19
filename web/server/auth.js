@@ -1,7 +1,12 @@
 import { Router } from 'express'
 import passport from 'passport'
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth'
+import fetch from 'node-fetch'
 import configuration from './configuration'
+import { stripSlash } from './util'
+
+const hubUrl = stripSlash(configuration.get('overwatch_hub:url'))
+const hubGQLEndpoint = hubUrl + '/graphql'
 
 const authRouter = Router()
 
@@ -21,11 +26,10 @@ authRouter.get(
   }),
   function(req, res) {
     if (!req.user) return res.redirect('/login')
-    if (req.user.provider === 'google') {
-      res.cookie(configuration.get('token_cookie_name'), 'google:' + req.user.googleAccessToken)
-      return res.redirect('/dashboard')
+    if (req.setHubTokenCookie) {
+      res.cookie(req.setHubTokenCookie.name, req.setHubTokenCookie.value)
     }
-    res.status(500).send('Unknown req.user provider')
+    return res.redirect('/dashboard')
   }
 )
 
@@ -65,15 +69,54 @@ function setupGoogle(configuration) {
             'E-mail received in Google profile is not verified: ' +
             JSON.stringify(profile.emails))
         }
-        return done(null, {
-          provider: 'google',
-          googleId: profile.id,
-          // displayName: profile.displayName,
-          // email: profile.emails[0].value,
-          // locale: profile._json.locale,
-          // pictureUrl: profile.photos ? profile.photos[0].value : null,
-          googleAccessToken: accessToken,
-        })
+
+        const fetchOptions = {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            query: `
+              mutation(
+                $googleAccessToken: String!
+              ) {
+                loginViaGoogleOAuth2Token(
+                  googleAccessToken: $googleAccessToken
+                ) {
+                  errorMessage
+                  user {
+                    id
+                    displayName
+                    emailAddress
+                  }
+                  accessToken
+                  accessTokenCookieName
+                }
+              }
+            `,
+            variables: {
+              googleAccessToken: accessToken,
+            }
+          })
+        }
+        const fetchRes = await fetch(hubGQLEndpoint, fetchOptions)
+        const fetchResData = await fetchRes.json()
+        console.debug(`fetchResData: ${JSON.stringify(fetchResData)}`)
+
+        const { errorMessage, user }  = fetchResData
+        const hubToken = fetchResData.accessToken
+        const hubTokenCookieName = fetchResData.accessTokenCookieName
+
+        if (user && hubToken && hubTokenCookieName) {
+          req.setHubTokenCookie = {
+            name: hubTokenCookieName,
+            value: hubToken,
+          }
+          return done(null, user)
+        } else {
+          return done(new Error(errorMessage || 'error'), null)
+        }
       } catch (err) {
         return done(err, null)
       }
