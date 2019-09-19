@@ -321,7 +321,6 @@ class Query (ObjectType):
     inactive_alerts = ConnectionField(AlertConnection)
     alert = Field(Alert, alert_id=String(required=True))
     headers = String()
-    cookies = String()
     auth_debug = String()
 
     async def resolve_auth_debug(root, info):
@@ -329,9 +328,6 @@ class Query (ObjectType):
 
     async def resolve_headers(root, info):
         return repr(info.context['request'].headers)
-
-    async def resolve_cookies(root, info):
-        return repr(info.context['request'].cookies.get('ow2token'))
 
     async def resolve_stream(root, info, stream_id):
         model = get_model(info)

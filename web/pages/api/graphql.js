@@ -17,7 +17,6 @@ export default asyncWrapper(async (req, res) => {
     }
   }
   if (req.cookies[tokenCookieName]) {
-    console.debug('XXX cookie:', req.cookies[tokenCookieName])
     fetchOptions.headers['Cookie'] = `${tokenCookieName}=${encodeURIComponent(req.cookies[tokenCookieName])}`
   }
   if (req.body) {
