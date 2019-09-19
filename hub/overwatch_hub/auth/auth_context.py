@@ -1,3 +1,4 @@
+from asyncio import create_task
 from logging import getLogger
 
 
@@ -15,7 +16,7 @@ async def do_get_request_auth_context(request):
     model = request.app['model']
     access_token_handle = get_request_access_token_handle(request, conf)
     if access_token_handle:
-        access_token = model.access_tokens.get_by_handle(access_token_handle, default=None)
+        access_token = await model.access_tokens.get_by_handle(access_token_handle, default=None)
         if access_token:
             logger.debug('Access token: %r', access_token)
             await access_token.check_validity()
@@ -41,7 +42,10 @@ def get_request_access_token_handle(request, conf):
 
 
 class AnonymousAuthContext:
-    pass
+
+    def __init__(self):
+        self.access_token = None
+        self.user = None
 
 
 class UserAuthContext:
@@ -52,3 +56,4 @@ class UserAuthContext:
 
     def __repr__(self):
         return f'<{self.__class__.__name__} user={self.user!r} access_token={self.access_token!r}>'
+

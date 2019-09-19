@@ -9,7 +9,7 @@ from simplejson import loads as json_loads
 from time import time
 from time import monotonic as monotime
 
-from ..auth import AuthError, login_via_google_oauth2_token
+from ..auth import AuthError, login_via_google_oauth2_token, get_request_auth_context
 from .helpers import Obj, json_dumps
 
 
@@ -322,6 +322,7 @@ class Query (ObjectType):
     alert = Field(Alert, alert_id=String(required=True))
     headers = String()
     auth_debug = String()
+    me = Field(User)
 
     async def resolve_auth_debug(root, info):
         return repr(await info.context['request']['get_user']())
@@ -384,6 +385,9 @@ class Query (ObjectType):
     async def resolve_alert(root, info, alert_id):
         return await get_model(info).alerts.get_by_id(alert_id)
 
+    async def resolve_me(root, info):
+        return (await get_auth_context(info)).user
+
 
 class LoginViaGoogleOAuth2Token (Mutation):
 
@@ -429,6 +433,10 @@ def get_model(info):
 
 def get_configuration(info):
     return info.context['request'].app['configuration']
+
+
+async def get_auth_context(info):
+    return await get_request_auth_context(info.context['request'])
 
 
 graphql_schema = Schema(query=Query, mutation=Mutations)
