@@ -103,10 +103,13 @@ function setupGoogle(configuration) {
         const fetchRes = await fetch(hubGQLEndpoint, fetchOptions)
         const fetchResData = await fetchRes.json()
         console.debug(`fetchResData: ${JSON.stringify(fetchResData)}`)
-
-        const { errorMessage, user }  = fetchResData
-        const hubToken = fetchResData.accessToken
-        const hubTokenCookieName = fetchResData.accessTokenCookieName
+        const { errors, data } = fetchResData
+        if (errors) {
+          return done(new Error(`GraphQL errors: ${JSON.stringify(errors)}`), null)
+        }
+        const { errorMessage, user } = data.loginViaGoogleOAuth2Token
+        const hubToken = data.loginViaGoogleOAuth2Token.accessToken
+        const hubTokenCookieName = data.loginViaGoogleOAuth2Token.accessTokenCookieName
 
         if (user && hubToken && hubTokenCookieName) {
           req.setHubTokenCookie = {

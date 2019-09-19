@@ -39,4 +39,4 @@ class User:
         self.email_address = doc.get('email_address')
 
     def __repr__(self):
-        return f'<{self.__class__.__name} id={self.id!r} display_name={self.display_name!r}>'
+        return f'<{self.__class__.__name__} id={self.id!r} display_name={self.display_name!r}>'

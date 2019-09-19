@@ -4,7 +4,7 @@ import { asyncWrapper, stripSlash } from '../../server/util'
 
 const hubUrl = stripSlash(configuration.get('overwatch_hub:url'))
 
-const tokenCookieName = configuration.get('token_cookie_name')
+const tokenCookieName = configuration.get('hub_access_token_cookie_name')
 
 export default asyncWrapper(async (req, res) => {
   console.info(`Processing ${req.method} ${req.url}`)

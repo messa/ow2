@@ -1,4 +1,6 @@
+from base64 import urlsafe_b64encode
 from datetime import datetime, timedelta
+import hashlib
 from logging import getLogger
 from secrets import token_urlsafe
 
@@ -13,10 +15,12 @@ class AccessTokens:
     def __init__(self, db):
         self._c_access_tokens = db['accessTokens']
 
+    @staticmethod
     def _generate_random_handle():
         return token_urlsafe(32).replace('-', '').replace('_', '')
 
-    def _get_handle_hash(self, handle):
+    @staticmethod
+    def _get_handle_hash(handle):
         assert isinstance(handle, str)
         handle_hash_bytes = hashlib.sha3_256(handle.encode()).digest()
         handle_hash_b64 = urlsafe_b64encode(handle_hash_bytes).decode().rstrip('=')
@@ -57,7 +61,7 @@ class AccessToken:
     def __init__(self, doc, c_access_tokens, handle=None):
         self.id = doc['_id']
         self.user_id = doc['user_id']
-        self.google_access_token = doc,get('google_access_token')
+        self.google_access_token = doc.get('google_access_token')
         self.created = doc['created']
         self.last_used = doc['last_used']
         self.expire_date = doc['expire_date']

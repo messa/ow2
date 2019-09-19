@@ -301,6 +301,9 @@ class User (ObjectType):
     def get_node(cls, info, id):
         raise Exception('NIY')
 
+    google_id = String()
+    display_name = String()
+    email_address = String()
 
 
 class Query (ObjectType):
@@ -396,15 +399,18 @@ class LoginViaGoogleOAuth2Token (Mutation):
     access_token = String()
     access_token_cookie_name = String()
 
-    async def mutate(root, info, access_token):
+    async def mutate(root, info, google_access_token):
         model = get_model(info)
         conf = get_configuration(info)
         try:
-            res = login_via_google_oauth2_token(access_token=google_access_token, model=model)
+            res = await login_via_google_oauth2_token(
+                google_access_token=google_access_token,
+                model=model,
+                configuration=conf)
             return LoginViaGoogleOAuth2Token(
                 error_message=None,
                 user=res.user,
-                access_token=token.handle,
+                access_token=res.token.handle,
                 access_token_cookie_name=conf.access_token_cookie_name)
         except AuthError as e:
             return LoginViaGoogleOAuth2Token(

@@ -53,3 +53,6 @@ class GoogleOAuth2:
         self.client_id = cfg.get('client_id')
         self.client_secret = cfg.get('client_secret')
         self.user_info_url = 'https://www.googleapis.com/oauth2/v1/userinfo'
+
+    def validate_email_address(self, email, hd):
+        return True

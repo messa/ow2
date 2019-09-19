@@ -32,7 +32,7 @@ nconf.defaults({
   },
   'session_secret': null,
   'session_cookie_name': 'ow2websess',
-  'token_cookie_name': 'ow2token',
+  'hub_access_token_cookie_name': 'ow2hubtoken',
 })
 
 export default nconf
