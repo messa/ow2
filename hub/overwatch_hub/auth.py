@@ -53,39 +53,48 @@ async def login_via_google_oauth2_token(google_access_token, configuration, mode
 LoginViaGoogleResult = namedtuple('LoginViaGoogleResult', 'user token')
 
 
-async def get_user(request):
-    if 'user' not in request:
-        request['user'] = await _get_user(request)
-    return request['user']
+async def get_auth_context(request):
+    if 'auth_context' not in request:
+        request['auth_context'] = await do_get_auth_context(request)
+    return request['auth_context']
 
 
-async def _get_user(request):
-    if request.cookies.get(token_cookie_name):
-        return await user_from_token_cookie(request, request.cookies[token_cookie_name])
+async def do_get_auth_context(request):
+    conf = request.app['configuration']
+    model = request.app['model']
+    access_token_handle = get_request_access_token_handle(request, conf)
+    if access_token_handle:
+        access_token = model.access_tokens.get_by_handle(access_token_handle, default=None)
+        if access_token:
+            logger.debug('Access token: %r', access_token)
+            await access_token.check_validity()
+            create_task(access_token.update_last_used())
+            return UserAuthContext(
+                access_token=access_token,
+                user=await model.users.get_by_id(access_token.user_id))
+    return AnonymousAuthContext()
+
+
+def get_request_access_token_handle(request, conf):
+    if request.headers.get('Authorization'):
+        try:
+            ah_type, ah_token = request.headers['Authorization'].split()
+        except ValueError:
+            pass
+        else:
+            if ah_type.lower() == 'bearer':
+                return ah_token
+    if request.cookies.get(conf.access_token_cookie_name):
+        return request.cookies[conf.access_token_cookie_name]
     return None
 
 
-async def user_from_token_cookie(request, cookie_value):
-    cookie_value = unquote(cookie_value)
-    provider, token = cookie_value.split(':', 1)
-    if provider == 'google':
-        user = GoogleUser(request=request, access_token=token)
-        await user.load()
-        return user
-    logger.warning('Could not parse token cookie: %r', token_cookie_value)
-    return None
+class AnonymousAuthContext:
+    pass
 
 
-class GoogleUser:
-
-    def __init__(self, request, access_token):
-        self._request = request
-        self._access_token = access_token
-
-    async def load(self):
-        google_conf = self._request.app['configuration'].google_oauth2
-        user_info = await retrieve_google_user_info(google_conf, self._access_token)
-        logger.debug('Google user info: %r', user_info)
+class UserAuthContext:
+    pass
 
 
 async def retrieve_google_user_info(google_conf, access_token):

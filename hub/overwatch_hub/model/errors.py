@@ -19,3 +19,7 @@ class AlertNotFoundError (NotFoundError):
 
 class AccessTokenNotFoundError (NotFoundError):
     pass
+
+
+class UserNotFoundError (NotFoundError):
+    pass

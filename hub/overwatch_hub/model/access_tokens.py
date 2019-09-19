@@ -68,6 +68,10 @@ class AccessToken:
         self.handle = handle
         self._c_access_tokens = c_access_tokens
 
+    async def check_validity(self):
+        pass
+        # TODO: pokud je nastaveno google_access_token, tak zjistit, zda je stale OK
+
     async def update_last_used(self):
         now = datetime.utcnow()
         expire_date = max(self.expire_date, now + timedelta(days=10))

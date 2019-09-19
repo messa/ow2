@@ -1,6 +1,7 @@
 from logging import getLogger
 
 from ..util import random_str
+from .errors import UserNotFoundError, raise_error
 
 
 logger = getLogger(__name__)
@@ -13,6 +14,16 @@ class Users:
 
     async def create_mandatory_indexes(self):
         await self._c_users.create_index('google_id', unique=True, sparse=True)
+
+    async def get_by_id(self, user_id, default=raise_error):
+        assert isinstance(user_id, str)
+        doc = await self._c_users.find_one({'_id': user_id})
+        if not doc:
+            if default is raise_error:
+                raise UserNotFoundError(f'User id {user_id!r} not found')
+            else:
+                return default
+        return User(doc=doc)
 
     async def get_or_create_google_user(self, google_id, display_name, email_address):
         assert google_id
