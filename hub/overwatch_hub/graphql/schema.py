@@ -320,15 +320,7 @@ class Query (ObjectType):
     active_acknowledged_alerts = ConnectionField(AlertConnection)
     inactive_alerts = ConnectionField(AlertConnection)
     alert = Field(Alert, alert_id=String(required=True))
-    headers = String()
-    auth_debug = String()
     me = Field(User)
-
-    async def resolve_auth_debug(root, info):
-        return repr(await info.context['request']['get_user']())
-
-    async def resolve_headers(root, info):
-        return repr(info.context['request'].headers)
 
     async def resolve_stream(root, info, stream_id):
         model = get_model(info)
