@@ -4,10 +4,12 @@ from logging import getLogger
 from pymongo.errors import ConnectionFailure
 
 from ..util import get_mongo_db_name, smart_repr, parse_datetime, to_compact_json
+from .access_tokens import AccessTokens
 from .alerts import Alerts
 from .errors import InitialConnectionError
 from .streams import Streams
 from .stream_snapshots import StreamSnapshots
+from .users import Users
 from .watchdog_checker import WatchdogChecker
 
 
@@ -54,9 +56,11 @@ class Model:
     def __init__(self, db, alert_webhooks=None, create_optional_indexes=True):
         self.db = db
         self._create_optional_indexes = create_optional_indexes
+        self.access_tokens = AccessTokens(db)
         self.alerts = Alerts(db, alert_webhooks=alert_webhooks)
         self.streams = Streams(db)
         self.stream_snapshots = StreamSnapshots(db)
+        self.users = Users(db)
         self.watchdog_checker = WatchdogChecker(model=self)
 
     async def __aenter__(self):
@@ -77,6 +81,7 @@ class Model:
 
     async def create_mandatory_indexes(self):
         await self.streams.create_mandatory_indexes()
+        await self.users.create_mandatory_indexes()
 
     async def create_optional_indexes(self):
         await self.stream_snapshots.create_optional_indexes()

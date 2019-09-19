@@ -9,14 +9,41 @@ logger = getLogger(__name__)
 token_cookie_name = 'ow2token'
 
 
-class AuthCache:
+class AuthError (Exception):
+    '''
+    This is for logic errors, like invalid client id, expired access token etc.
+    Not for transport issues like HTTP status 500 or connection timeout.
+    '''
     pass
+
+
+async def login_via_google_oauth2_token(access_token, configuration, model):
+    user_info = await sync_retrieve_google_user_info(
+        google_conf=conf.google_oauth2,
+        access_token=access_token)
+    assert isinstance(user_info, dict)
+    logger.debug('Google user info: %r', user_info)
+    assert 0
+    '''
+    How user_info looks like: TODO
+    '''
+    if not user_info[email_verified]:
+        raise LoginFailed()
+    configuration.google_oauth2.validate_email_address(user_info['email'])
+    user = await model.users.get_or_create_google_user(
+        google_id=user_info['id'],
+        display_name=xxx,
+        email_address=xx)
+    logger.debug('User: %r', user)
+    token = await model.access_tokens.create(user_id=user.id, google_access_token=access_token)
+    return LoginViaGoogleResult(user=user, token=token)
+
+
+LoginViaGoogleResult = namedtuple('LoginViaGoogleResult', 'user token')
 
 
 async def get_user(request):
     if 'user' not in request:
-        if 'auth_cache' not in request.app:
-            request.app['auth_cache'] = AuthCache()
         request['user'] = await _get_user(request)
     return request['user']
 
@@ -58,7 +85,7 @@ async def retrieve_google_user_info(*args):
 def sync_retrieve_google_user_info(google_conf, access_token):
     google = OAuth2Session(
         client_id=google_conf.client_id,
-        token={'access_token': access_token})
+        token={'access_token': access_token, 'token_type': 'Bearer'})
     r = google.get(google_conf.user_info_url)
     r.raise_for_status()
     return r.json()

@@ -1,5 +1,5 @@
 import asyncio
-from graphene import Schema, ObjectType, Field, List
+from graphene import Schema, ObjectType, Mutation, Field, List
 from graphene import Int, String, DateTime, Boolean
 from graphene.relay import Node, Connection, ConnectionField
 from graphene.types.json import JSONString
@@ -9,6 +9,7 @@ from simplejson import loads as json_loads
 from time import time
 from time import monotonic as monotime
 
+from ..auth import AuthError, login_via_google_oauth2_token
 from .helpers import Obj, json_dumps
 
 
@@ -291,6 +292,17 @@ class AlertConnection (Connection):
         node = Alert
 
 
+class User (ObjectType):
+
+    class Meta:
+        interfaces = (Node, )
+
+    @classmethod
+    def get_node(cls, info, id):
+        raise Exception('NIY')
+
+
+
 class Query (ObjectType):
 
     node = Node.Field()
@@ -372,6 +384,30 @@ class Query (ObjectType):
 
     async def resolve_alert(root, info, alert_id):
         return await get_model(info).alerts.get_by_id(alert_id)
+
+
+class LoginViaGoogleOAuth2Token (Mutation):
+
+    class Arguments:
+        google_access_token = String()
+
+    error_message = String()
+    user = Field(User)
+    access_token = String()
+    access_token_cookie_name = String()
+
+    async def mutate(root, info, access_token):
+        model = get_model(info)
+        try:
+            res = login_via_google_oauth2_token(access_token=google_access_token, model=model)
+            return LoginViaGoogleOAuth2Token(
+                error_message=None,
+                user=res.user,
+                token=token.handle)
+
+        except AuthError as e:
+            token = None
+            error_message = str(e)
 
 
 def get_model(info):

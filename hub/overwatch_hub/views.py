@@ -23,6 +23,7 @@ async def post_report(request):
 
 
 async def _just_log_exceptions(coro):
+    # THIS IS TEMPORARY FOR INITIAL DEVELOPMENT
     try:
         return await coro
     except Exception as e:
