@@ -26,9 +26,8 @@ def get_level_by_verbosity(verbosity):
 def setup_log_file(log_file_path):
     from logging import DEBUG, Formatter, getLogger
     from logging.handlers import WatchedFileHandler
-    if not log_file_path:
-        return
-    h = WatchedFileHandler(str(log_file_path))
-    h.setLevel(DEBUG)
-    h.setFormatter(Formatter(log_format))
-    getLogger().addHandler(h)
+    if log_file_path:
+        h = WatchedFileHandler(str(log_file_path))
+        h.setLevel(DEBUG)
+        h.setFormatter(Formatter(log_format))
+        getLogger().addHandler(h)

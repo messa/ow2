@@ -30,21 +30,12 @@ def system_agent_main():
     conf = Configuration(args.conf)
     try:
         setup_logging(verbosity=args.verbose)
-        #conf = Configuration(args.conf_file)
-        #setup_log_file(conf.log.file_path)
+        setup_log_file(conf.log_file_path)
         logger.debug('System agent starting')
         run_system_agent(conf)
     except BaseException as e:
         logger.exception('System agent failed: %r', e)
         sys.exit('ERROR: {!r}'.format(e))
-
-
-# class Configuration (BaseConfiguration):
-#
-#     top_level_key = 'overwatch_system_agent'
-#
-#     def _load(self, data, base_path):
-#         super()._load(data, base_path)
 
 
 def run_system_agent(conf):
@@ -211,17 +202,17 @@ def gather_volumes():
     volumes = {}
     for p in psutil.disk_partitions():
         usage = psutil.disk_usage(p.mountpoint)
-        
+
         if usage.total >= free_bytes_red_threshold * 4 and usage.free < free_bytes_red_threshold:
             usage_free_state = 'red'
         else:
             usage_free_state = 'green'
-        
+
         if usage.percent >= percent_red_threshold:
             usage_percent_state = 'red'
         else:
             usage_percent_state = 'green'
-            
+
         volumes[p.mountpoint] = {
             'mountpoint': p.mountpoint,
             'device': p.device,

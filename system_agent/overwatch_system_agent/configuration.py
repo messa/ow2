@@ -11,3 +11,7 @@ class Configuration:
         self.report_url = cfg['report_url']
         self.report_token = cfg['report_token']
         self.label = cfg.get('label') or {}
+        self.log_file_path = None
+        if cfg.get('log'):
+            if cfg['log'].get('file'):
+                self.log_file_path = cfg_dir / cfg['log']['file']
