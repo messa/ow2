@@ -4,7 +4,7 @@ from logging import Formatter
 from logging import getLogger as _getLogger
 
 
-default_format = '%(asctime)s %(name)-20s %(levelname)5s: %(message)s'
+default_format = '%(asctime)s [%(process)d] %(name)-20s %(levelname)5s: %(message)s'
 
 log_context = ContextVar('log_context', default='')
 
