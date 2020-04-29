@@ -1,5 +1,6 @@
 from asyncio import create_task
 from logging import getLogger
+from .errors import AccessDeniedError
 
 
 logger = getLogger(__name__)
@@ -47,6 +48,9 @@ class AnonymousAuthContext:
         self.access_token = None
         self.user = None
 
+    def check_general_access(self):
+        raise AccessDeniedError('Access denied (general access)')
+
 
 class UserAuthContext:
 
@@ -57,3 +61,5 @@ class UserAuthContext:
     def __repr__(self):
         return f'<{self.__class__.__name__} user={self.user!r} access_token={self.access_token!r}>'
 
+    def check_general_access(self):
+        return self

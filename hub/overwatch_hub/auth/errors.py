@@ -11,3 +11,6 @@ class AuthError (Exception):
     '''
     pass
 
+
+class AccessDeniedError (AuthError):
+    pass

@@ -323,26 +323,31 @@ class Query (ObjectType):
     me = Field(User)
 
     async def resolve_stream(root, info, stream_id):
+        (await get_auth_context(info)).check_general_access()
         model = get_model(info)
         stream = await model.streams.get_by_id(stream_id)
         return stream
 
     async def resolve_streams(root, info):
+        (await get_auth_context(info)).check_general_access()
         model = get_model(info)
         streams = await model.streams.list_all()
         return streams
 
     async def resolve_stream_snapshot(root, info, snapshot_id):
+        (await get_auth_context(info)).check_general_access()
         model = get_model(info)
         snapshot = await model.stream_snapshots.get_by_id(snapshot_id)
         return snapshot
 
     async def resolve_last_stream_snapshot(root, info, stream_id):
+        (await get_auth_context(info)).check_general_access()
         model = get_model(info)
         snapshot = await model.stream_snapshots.get_latest(stream_id=stream_id)
         return snapshot
 
     async def resolve_search_current_snapshot_items(root, info, path_query):
+        (await get_auth_context(info)).check_general_access()
         model = get_model(info)
         t = monotime()
         streams = await model.streams.list_all()
@@ -363,18 +368,23 @@ class Query (ObjectType):
         return found_items
 
     async def resolve_active_alerts(root, info):
+        (await get_auth_context(info)).check_general_access()
         return await get_model(info).alerts.list_active()
 
     async def resolve_active_unacknowledged_alerts(root, info):
+        (await get_auth_context(info)).check_general_access()
         return await get_model(info).alerts.list_active_unacknowledged()
 
     async def resolve_active_acknowledged_alerts(root, info):
+        (await get_auth_context(info)).check_general_access()
         return await get_model(info).alerts.list_active_acknowledged()
 
     async def resolve_inactive_alerts(root, info):
+        (await get_auth_context(info)).check_general_access()
         return await get_model(info).alerts.list_inactive()
 
     async def resolve_alert(root, info, alert_id):
+        (await get_auth_context(info)).check_general_access()
         return await get_model(info).alerts.get_by_id(alert_id)
 
     async def resolve_me(root, info):
@@ -428,6 +438,8 @@ def get_configuration(info):
 
 
 async def get_auth_context(info):
+    if info.context.get('auth_context'):
+        return info.context['auth_context']
     return await get_request_auth_context(info.context['request'])
 
 

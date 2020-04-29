@@ -59,7 +59,18 @@ async def model(db):
 
 
 @fixture
-def graphql(model):
+def auth_context():
+    class TestAuthContext:
+        def __init__(self):
+            self.access_token = None
+            self.user = None
+        def check_general_access(self):
+            return self
+    return TestAuthContext()
+
+
+@fixture
+def graphql(model, auth_context):
     from graphql import graphql
     from graphql.execution.base import ExecutionResult
     from graphql.execution.executors.asyncio import AsyncioExecutor as GQLAIOExecutor
@@ -69,6 +80,7 @@ def graphql(model):
         getLogger(__name__).info('Running GraphQL query: %s', ' '.join(query.split()))
         context = {
             'model': model,
+            'auth_context': auth_context,
         }
         res = await graphql(
             graphql_schema,

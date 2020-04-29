@@ -28,8 +28,10 @@ function getFetchQuery(req) {
       }),
       credentials: 'include'
     }
+    if (req && req.headers['cookie']) {
+      fetchOptions.headers['Cookie'] = req.headers['cookie']
+    }
     const gqlEndpoint = req ? req.hubGQLEndpoint : getServerAddress(req) + '/api/graphql'
-    console.debug(`fetch ${gqlEndpoint}`)
     const res = await fetch(gqlEndpoint, fetchOptions)
     if (res.status !== 200) {
       const text = await res.text()

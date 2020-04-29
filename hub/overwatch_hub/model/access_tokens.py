@@ -2,6 +2,7 @@ from base64 import urlsafe_b64encode
 from datetime import datetime, timedelta
 import hashlib
 from logging import getLogger
+from reprlib import repr as smart_repr
 from secrets import token_urlsafe
 
 from .errors import raise_error, AccessTokenNotFoundError
@@ -83,3 +84,6 @@ class AccessToken:
             }})
         self.last_used = now
         self.expire_date = expire_date
+
+    def __repr__(self):
+        return f'<{self.__class__.__name__} id={self.id!r} google_access_token={smart_repr(self.google_access_token)}>'

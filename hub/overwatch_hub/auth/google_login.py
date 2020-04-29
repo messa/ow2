@@ -54,4 +54,3 @@ async def login_via_google_oauth2_token(google_access_token, configuration, mode
 
 
 LoginViaGoogleResult = namedtuple('LoginViaGoogleResult', 'user token')
-
