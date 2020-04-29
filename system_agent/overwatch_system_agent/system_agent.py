@@ -119,6 +119,23 @@ def gather_state(conf):
     }
 
 
+def value(value, counter=None, unit=None, check_state=None):
+    '''
+    Helper function to generate the report value metadata fragment.
+    '''
+    data = {
+        '__value': value,
+    }
+    if counter:
+        data['__counter'] = True
+    if unit:
+        data['__unit'] = unit
+    if check_state:
+        data.setdefault('__check', {})
+        data['__check']['state'] = check_state
+    return data
+
+
 def gather_public_source_ip4():
     try:
         r = rs.get('https://ip4.messa.cz/', timeout=10)
@@ -135,7 +152,7 @@ def gather_public_source_ip6():
         r.raise_for_status()
         return r.text.strip()
     except Exception as e:
-        # log as just info, because some hosts have IPv6 not configured
+        # log as just info, because some hosts do not have IPv6 configured
         logger.info('Failed to retrieve public_source_ip6: %r', e)
         return None
 
@@ -174,30 +191,15 @@ def gather_cpu():
         },
         'times': {},
         'stats': {
-            'ctx_switches': {
-                '__value': cs.ctx_switches,
-                '__counter': True,
-            },
-            'interrupts': {
-                '__value': cs.interrupts,
-                '__counter': True,
-            },
-            'soft_interrupts': {
-                '__value': cs.soft_interrupts,
-                '__counter': True,
-            },
-            'syscalls': {
-                '__value': cs.syscalls,
-                '__counter': True,
-            },
+            'ctx_switches': value(cs.ctx_switches, counter=True),
+            'interrupts': value(cs.interrupts, counter=True),
+            'soft_interrupts': value(cs.soft_interrupts, counter=True),
+            'syscalls': value(cs.syscalls, counter=True),
         },
     }
     for k in 'user', 'system', 'idle', 'iowait':
         try:
-            data['times'][k] = {
-                '__value': getattr(ct, k),
-                '__counter': True,
-            }
+            data['times'][k] = value(getattr(ct, k), counter=True)
         except AttributeError:
             pass
     return data
@@ -209,35 +211,28 @@ def gather_volumes():
     volumes = {}
     for p in psutil.disk_partitions():
         usage = psutil.disk_usage(p.mountpoint)
+        
+        if usage.total >= free_bytes_red_threshold * 4 and usage.free < free_bytes_red_threshold:
+            usage_free_state = 'red'
+        else:
+            usage_free_state = 'green'
+        
+        if usage.percent >= percent_red_threshold:
+            usage_percent_state = 'red'
+        else:
+            usage_percent_state = 'green'
+            
         volumes[p.mountpoint] = {
             'mountpoint': p.mountpoint,
             'device': p.device,
             'fstype': p.fstype,
             'opts': p.opts,
             'usage': {
-                'total_bytes': {
-                    '__value': usage.total,
-                    '__unit': 'bytes',
-                },
-                'used_bytes': {
-                    '__value': usage.used,
-                    '__unit': 'bytes',
-                },
-                'free_bytes': {
-                    '__value': usage.free,
-                    '__unit': 'bytes',
-                    '__check': {
-                        'state': 'red' if usage.total >= free_bytes_red_threshold * 4 and usage.free < free_bytes_red_threshold else 'green',
-                    },
-                },
-                'percent': {
-                    '__value': usage.percent,
-                    '__unit': 'percents',
-                    '__check': {
-                        'state': 'red' if usage.percent >= percent_red_threshold else 'green',
-                    },
-                }
-            },
+                'total_bytes': value(usage.total, unit='bytes'),
+                'used_bytes': value(usage.used, unit='bytes'),
+                'free_bytes': value(usage.free, unit='bytes', check_state=usage_free_state),
+                'percent': value(usage.percent, unit='percents', check_state=usage_percent_state),
+            }
         }
     return volumes
 
@@ -245,37 +240,16 @@ def gather_volumes():
 def gather_memory():
     mem = psutil.virtual_memory()
     return {
-        'total_bytes': {
-            '__value': mem.total,
-            '__unit': 'bytes',
-        },
-        'available_bytes': {
-            '__value': mem.available,
-            '__unit': 'bytes',
-        },
+        'total_bytes': value(mem.total, unit='bytes'),
+        'available_bytes': value(mem.available, unit='bytes'),
     }
 
 
 def gather_swap():
     sw = psutil.swap_memory()
     return {
-        'total_bytes': {
-            '__value': sw.total,
-            '__unit': 'bytes',
-        },
-        'used_bytes': {
-            '__value': sw.used,
-            '__unit': 'bytes',
-        },
-        'free_bytes': {
-            '__value': sw.free,
-            '__unit': 'bytes',
-        },
-        'percent': {
-            '__value': sw.percent,
-            '__unit': 'percents',
-            '__check': {
-                'state': 'red' if sw.percent > 80 else 'green',
-            },
-        },
+        'total_bytes': value(sw.total, unit='bytes'),
+        'used_bytes': value(sw.used, unit='bytes'),
+        'free_bytes': value(sw.free, unit='bytes'),
+        'percent': value(sw.percent, unit='percents', check_state='red' if sw.percent > 80 else 'green'),
     }
