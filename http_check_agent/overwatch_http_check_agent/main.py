@@ -78,8 +78,9 @@ def setup_logging(verbose):
 def setup_log_file(log_file_path):
     from logging import DEBUG, Formatter, getLogger
     from logging.handlers import WatchedFileHandler
+    from .util.logging import CustomFormatter
     if log_file_path:
         h = WatchedFileHandler(str(log_file_path))
         h.setLevel(DEBUG)
-        h.setFormatter(Formatter(log_format))
+        h.setFormatter(CustomFormatter(strip_name_prefix=__name__.split('.')[0]))
         getLogger().addHandler(h)
