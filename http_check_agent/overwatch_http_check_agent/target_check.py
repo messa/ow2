@@ -26,12 +26,15 @@ async def check_target(session, conf, target, send_report_semaphore):
         check_counter = count()
         while True:
             with add_log_context(f'ch{next(check_counter):05d}'):
-                await check_target_once(session, conf, target, interval_s, send_report_semaphore)
+                await check_target_once(
+                    conf, target, interval_s,
+                    send_report=lambda report: send_report(
+                        session, conf, report, send_report_semaphore))
             logger.debug('Sleeping for %d s', interval_s)
             await sleep(interval_s)
 
 
-async def check_target_once(session, conf, target, interval_s, send_report_semaphore):
+async def check_target_once(conf, target, interval_s, send_report):
     try:
         logger.debug('check_target_once: %s', target)
         report = {
@@ -73,7 +76,7 @@ async def check_target_once(session, conf, target, interval_s, send_report_semap
             },
         }
         try:
-            await wait_for(shield(send_report(session, conf, report, send_report_semaphore)), 1)
+            await wait_for(shield(send_report(report)), 1)
         except TimeoutError:
             logger.debug('send_report is taking too long, not waiting for it')
     except Exception as e:
