@@ -3,6 +3,7 @@ from aiohttp.resolver import AsyncResolver
 from asyncio import TimeoutError, CancelledError, shield, sleep, wait_for
 from datetime import datetime, timedelta
 from itertools import count
+from pprint import pformat
 from pytz import utc
 from reprlib import repr as smart_repr
 from socket import getfqdn
@@ -354,5 +355,9 @@ async def send_report(session, conf, report, send_report_semaphore):
             async with session.post(conf.report_url, json=report, headers=headers) as r:
                 r.raise_for_status()
                 logger.debug('Report sent successfully')
+    except CancelledError as e:
+        raise e
     except Exception as e:
         logger.warning('Failed to send report to %s: %r', conf.report_url, e)
+        if isinstance(e, TypeError):
+            logger.debug('Report:\n%s', pformat(report, width=200))
