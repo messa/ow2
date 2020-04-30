@@ -15,6 +15,10 @@ class Configuration:
         self.default_label = cfg.get('label') or {}
         self.default_duration_threshold = parse_interval(cfg.get('duration_threshold') or 5)
         self.targets = [Target(x) for x in cfg['targets']]
+        self.log_file_path = None
+        if cfg.get('log'):
+            if cfg['log'].get('file'):
+                self.log_file_path = cfg_dir / cfg['log']['file']
 
 
 class Target:

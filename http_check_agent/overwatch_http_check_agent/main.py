@@ -33,7 +33,7 @@ def http_check_agent_main():
         logger.exception('Failed to load configuration from %s: %r', cfg_path, e)
         sys.exit(f'ERROR - failed to load configuration from {cfg_path}: {e!r}')
     try:
-        #setup_log_file(conf.log.file_path)
+        setup_log_file(conf.log_file_path)
         logger.debug('HTTP check agent starting')
         run(async_main(conf))
         logger.info('HTTP check agent has grafecully finished')
@@ -73,3 +73,13 @@ def setup_logging(verbose):
     h.setLevel(DEBUG if verbose else WARNING)
     h.setFormatter(CustomFormatter(strip_name_prefix=__name__.split('.')[0]))
     getLogger().addHandler(h)
+
+
+def setup_log_file(log_file_path):
+    from logging import DEBUG, Formatter, getLogger
+    from logging.handlers import WatchedFileHandler
+    if log_file_path:
+        h = WatchedFileHandler(str(log_file_path))
+        h.setLevel(DEBUG)
+        h.setFormatter(Formatter(log_format))
+        getLogger().addHandler(h)
