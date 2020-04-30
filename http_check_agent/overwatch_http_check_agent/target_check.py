@@ -308,7 +308,8 @@ async def get_ip_reverse(ip):
     from aiodns.error import DNSError
     resolver = DNSResolver()
     try:
-        return await wait_for(resolver.gethostbyaddr(ip), dns_timeout)
+        res = await wait_for(resolver.gethostbyaddr(ip), dns_timeout)
+        return res.name
     except CancelledError as e:
         raise e
     except TimeoutError:
