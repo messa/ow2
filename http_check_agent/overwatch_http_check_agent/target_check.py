@@ -1,6 +1,6 @@
 from aiohttp import ClientSession, TCPConnector, Fingerprint
 from aiohttp.resolver import AsyncResolver
-from asyncio import TimeoutError, shield, sleep, wait_for
+from asyncio import TimeoutError, CancelledError, shield, sleep, wait_for
 from datetime import datetime, timedelta
 from itertools import count
 from pytz import utc
@@ -16,6 +16,8 @@ from .util import parse_datetime, add_log_context, get_logger
 logger = get_logger(__name__)
 
 _log_target_id_counter = count()
+
+dns_timeout = 15
 
 
 async def check_target(session, conf, target, send_report_semaphore):
@@ -55,6 +57,8 @@ async def check_target_once(conf, target, interval_s, send_report):
         }
         try:
             hostname, ips = await get_url_ip_addresses(target.url)
+        except CancelledError as e:
+            raise e
         except Exception as e:
             report['state']['error'] = {
                 '__value': f'Failed to resolve hostname of {target.url!r}: {e!r}',
@@ -79,6 +83,9 @@ async def check_target_once(conf, target, interval_s, send_report):
             await wait_for(shield(send_report(report)), 1)
         except TimeoutError:
             logger.debug('send_report is taking too long, not waiting for it')
+    except CancelledError as e:
+        logger.exception('check_target_once cancelled (%r); target: %s', e, target)
+        raise e
     except Exception as e:
         logger.exception('check_target_once failed: %r; target: %s', e, target)
         raise Exception(f'check_target_once failed: {e!r}') from None
@@ -94,6 +101,15 @@ async def check_target_ip(conf, target, report, hostname, ip):
             },
         },
     }
+    try:
+        ip_report['reverse_record'] = await get_ip_reverse(ip)
+    except CancelledError as e:
+        logger.debug('get_ip_reverse cancelled')
+        raise e
+    except ReverseLookupError as e:
+        logger.debug('get_ip_reverse ReverseLookupError: %s', e)
+        ip_report['reverse_record'] = None
+        ip_report['reverse_record_error'] = str(e)
     start_time = monotime()
     try:
         conn = CustomTCPConnector(resolver=CustomResolver(hostname, ip))
@@ -143,6 +159,9 @@ async def check_target_ip(conf, target, report, hostname, ip):
                             },
                         },
                     }
+    except CancelledError as e:
+        logger.info('GET %r via %s cancelled: %r', target.url, ip, e)
+        raise e
     except Exception as e:
         logger.info('GET %r via %s failed: %r', target.url, ip, e)
         if isinstance(e, SSLError):
@@ -267,9 +286,36 @@ async def get_url_ip_addresses(url):
     from urllib.parse import urlparse
     hostname = urlparse(url).hostname
     resolver = DNSResolver()
-    r = await resolver.gethostbyname(hostname, AF_INET)
+    try:
+        r = await wait_for(resolver.gethostbyname(hostname, AF_INET), dns_timeout)
+    except CancelledError as e:
+        raise e
+    except TimeoutError:
+        raise Exception(f'gethostbyname({hostname!r}, AF_INET) timed out after {dns_timeout} s')
+    except Exception as e:
+        raise Exception(f'gethostbyname({hostname!r}, AF_INET) failed: {e!r}')
     logger.debug('get_url_ip_addresses: %r -> %r -> %r', url, hostname, r.addresses)
     return hostname, r.addresses
+
+
+class ReverseLookupError (Exception):
+    pass
+
+
+async def get_ip_reverse(ip):
+    from aiodns import DNSResolver
+    from aiodns.error import DNSError
+    resolver = DNSResolver()
+    try:
+        return await wait_for(resolver.gethostbyaddr(ip), dns_timeout)
+    except CancelledError as e:
+        raise e
+    except TimeoutError:
+        raise ReverseLookupError(f'gethostbyaddr({ip!r}) timed out after {dns_timeout} s')
+    except DNSError as e:
+        raise ReverseLookupError(str(e))
+    except Exception as e:
+        raise ReverseLookupError(f'gethostbyaddr({ip!r}) failed: {e!r}')
 
 
 class CustomResolver:
