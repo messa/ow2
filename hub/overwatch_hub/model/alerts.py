@@ -11,6 +11,8 @@ from .helpers import to_objectid
 
 logger = getLogger(__name__)
 
+default_limit = 10**4
+
 
 class Alerts:
 
@@ -33,21 +35,21 @@ class Alerts:
     async def list_active(self):
         return await self._list_active({})
 
-    async def _list_active(self, query, sort=None, limit=100):
+    async def _list_active(self, query, sort=None, limit=None):
         sort = sort or [('first_snapshot_id', DESC)]
-        docs = await self._c_active.find(query, sort=sort, limit=limit).to_list(length=None)
+        docs = await self._c_active.find(query, sort=sort, limit=limit or default_limit).to_list(None)
         return [Alert(doc, active=True) for doc in docs]
 
-    async def list_active_unacknowledged(self):
-        return await self._list_active({'acknowledged_date': None})
+    async def list_active_unacknowledged(self, limit=None):
+        return await self._list_active({'acknowledged_date': None}, limit=limit)
 
-    async def list_active_acknowledged(self):
-        return await self._list_active({'acknowledged_date': {'$ne': None}})
+    async def list_active_acknowledged(self, limit=None):
+        return await self._list_active({'acknowledged_date': {'$ne': None}}, limit=limit)
 
-    async def list_inactive(self):
+    async def list_inactive(self, limit=None):
         t = monotime()
         docs = await self._c_inactive.find({},
-            sort=[('last_snapshot_id', DESC)], limit=100).to_list(length=None)
+            sort=[('last_snapshot_id', DESC)], limit=limit or default_limit).to_list(None)
         logger.debug('Retrieved %d inactive alerts in %.3f s', len(docs), monotime() - t)
         return [Alert(doc, active=False) for doc in docs]
 
