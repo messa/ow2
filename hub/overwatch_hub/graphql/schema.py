@@ -356,7 +356,7 @@ class Query (ObjectType):
         return await get_model(info).alerts.list_active_acknowledged()
 
     async def resolve_inactive_alerts(root, info):
-        return await get_model(info).alerts.list_inactive()
+        return await get_model(info).alerts.list_inactive(limit=1000)
 
     async def resolve_alert(root, info, alert_id):
         return await get_model(info).alerts.get_by_id(alert_id)
