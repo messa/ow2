@@ -3,8 +3,8 @@
 import sys
 from setuptools import setup, find_packages
 
-if sys.version_info < (3, 6):
-    sys.exit('Python < 3.6 is not supported')
+if sys.version_info < (3, 7):
+    sys.exit('Python < 3.7 is not supported')
 
 setup(
     name='overwatch-hub',
