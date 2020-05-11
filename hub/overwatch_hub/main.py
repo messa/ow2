@@ -14,6 +14,7 @@ from .configuration import Configuration
 from .connections import AlertWebhooks
 from .graphql import graphql_schema
 from .model import InitialConnectionError, get_model
+from .util import smart_repr
 from .views import routes
 
 
