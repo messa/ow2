@@ -3,7 +3,7 @@ python3=python3
 conf_path=sample_conf.yaml
 
 check: $(venv_dir)/packages-installed
-	$(venv_dir)/bin/python3 -m pytest -vvv -x --tb=native --no-print-logs --pythonwarnings=ignore $(pytest_args) tests
+	$(venv_dir)/bin/python3 -m pytest -vvv -x --tb=native --pythonwarnings=ignore $(pytest_args) tests
 
 run: $(venv_dir)/packages-installed
 	$(venv_dir)/bin/overwatch-hub --conf $(conf_path)
