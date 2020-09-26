@@ -69,6 +69,8 @@ class Streams:
     async def get_by_id(self, stream_id):
         assert isinstance(stream_id, str)
         doc = await self._c_streams.find_one({'_id': stream_id})
+        if not doc:
+            raise Exception(f'Stream id={stream_id!r} not found')
         return self._obj(doc)
 
     async def list_all(self):
