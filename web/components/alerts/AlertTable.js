@@ -6,6 +6,7 @@ import SnapshotItemValue from '../streamSnapshot/SnapshotItemValue'
 import DateTime from '../util/DateTime'
 
 class AlertTable extends React.Component {
+
   render() {
     const { alerts, showEndDate } = this.props
     const alertNodes = alerts && alerts.edges.map(edge => edge.node)
@@ -57,7 +58,7 @@ class AlertTable extends React.Component {
                 </Link>
               </td>
               <td>
-                <LabelFromJSON labelJSON={alert.stream.labelJSON} />
+                {alert.stream && <LabelFromJSON labelJSON={alert.stream.labelJSON} />}
               </td>
               <td>{alert.alertType}</td>
               <td>{alert.itemPath.join(' > ')}</td>
