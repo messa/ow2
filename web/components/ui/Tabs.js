@@ -1,7 +1,7 @@
 import React from 'react'
 import Link from 'next/link'
 
-export default function Tabs({ activeKey, items }) {
+function Tabs({ activeKey, items }) {
   const itemComponents = []
   for (const item of items) {
     const active = item.key === activeKey
@@ -31,3 +31,5 @@ export default function Tabs({ activeKey, items }) {
     </div>
   )
 }
+
+export default Tabs

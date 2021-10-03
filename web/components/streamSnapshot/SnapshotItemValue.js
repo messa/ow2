@@ -2,7 +2,7 @@ import React from 'react'
 
 const round = Math.round
 
-export default ({ item, valueJSON, unit }) => {
+function SnapshotItemValue({ item, valueJSON, unit }) {
   if (item && !valueJSON) {
     valueJSON = item.valueJSON
     unit = item.unit
@@ -27,3 +27,5 @@ export default ({ item, valueJSON, unit }) => {
     </code>
   )
 }
+
+export default SnapshotItemValue

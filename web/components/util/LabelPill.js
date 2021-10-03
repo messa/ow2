@@ -1,7 +1,7 @@
 import React from 'react'
 import Link from 'next/link'
 
-export default function LabelPill({ labelKey, labelValue, href }) {
+function LabelPill({ labelKey, labelValue, href }) {
   const content = (
     <>
       <b>{labelKey}</b>
@@ -23,3 +23,5 @@ export default function LabelPill({ labelKey, labelValue, href }) {
     return (<span className='LabelPill'>{content}</span>)
   }
 }
+
+export default LabelPill

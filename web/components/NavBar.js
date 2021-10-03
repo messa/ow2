@@ -1,7 +1,7 @@
 import React from 'react'
 import Link from 'next/link'
 
-export default ({ activeItem }) => {
+function NavBar({ activeItem }) {
   const navLink = (name, href, title) => {
     if (name === activeItem) {
       return (<Link href={href}><a className='active'>{title}</a></Link>)
@@ -55,3 +55,5 @@ export default ({ activeItem }) => {
     </nav>
   )
 }
+
+export default NavBar

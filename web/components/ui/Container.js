@@ -1,7 +1,11 @@
 import React from 'react'
 
-export default ({ children, wide }) => (
-  <div className={wide ? 'owContainerWide' : 'owContainer'}>
-    {children}
-  </div>
-)
+function Container({ children, wide }) {
+  return (
+    <div className={wide ? 'owContainerWide' : 'owContainer'}>
+      {children}
+    </div>
+  )
+}
+
+export default Container
