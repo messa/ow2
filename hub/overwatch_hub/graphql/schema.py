@@ -276,7 +276,7 @@ class Alert (ObjectType):
         return alert.id
 
     async def resolve_stream(alert, info):
-        return get_model(info).streams.get_by_id(alert.stream_id)
+        return await get_model(info).streams.get_by_id(alert.stream_id)
 
     def resolve_first_item_value_json(alert, info):
         return alert.first_item_value
