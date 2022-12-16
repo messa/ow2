@@ -1,4 +1,5 @@
 from functools import partial
+import pytest_asyncio
 from pytest import fixture, mark
 from simplejson import loads as json_loads
 from textwrap import dedent
@@ -29,7 +30,7 @@ def sample_snapshot_data():
     ''')
 
 
-@fixture
+@pytest_asyncio.fixture
 async def sample_snapshot_loaded(model, sample_snapshot_data):
     assert await model.streams.list_all() == []
     await model.save_report(sample_snapshot_data)

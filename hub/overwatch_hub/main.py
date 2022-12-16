@@ -1,9 +1,8 @@
 from aiohttp.web import Application, AppRunner, TCPSite
-from aiohttp_graphql import GraphQLView
+from graphql_server.aiohttp import GraphQLView
 from argparse import ArgumentParser
 import asyncio
 from contextlib import AsyncExitStack
-from graphql.execution.executors.asyncio import AsyncioExecutor as GQLAIOExecutor
 from logging import getLogger
 from os import environ
 from pymongo.errors import ConnectionFailure as MongoDBConnectionFailure
@@ -73,8 +72,7 @@ async def async_main(conf):
             route_path='/graphql',
             schema=graphql_schema,
             graphiql=True,
-            enable_async=True,
-            executor=GQLAIOExecutor())
+            enable_async=True)
         runner = AppRunner(app)
         await runner.setup()
         host = conf.http_interface.bind_host

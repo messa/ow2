@@ -31,7 +31,7 @@ def get_mongo_db(mongo_conf):
     if mongo_conf.ssl_ca_cert_file:
         if not mongo_conf.ssl_ca_cert_file.is_file():
             raise Exception(f'ssl_ca_cert_file is not a file: {mongo_conf.ssl_ca_cert_file}')
-        mc_kwargs['ssl_ca_certs'] = str(mongo_conf.ssl_ca_cert_file)
+        mc_kwargs['tlsCAFile'] = str(mongo_conf.ssl_ca_cert_file)
     client = AsyncIOMotorClient(mongo_conf.uri, **mc_kwargs)
     db_name = get_mongo_db_name(mongo_conf.uri)
     db = client[db_name]

@@ -369,4 +369,4 @@ def get_model(info):
     return info.context['model']
 
 
-graphql_schema = Schema(query=Query)
+graphql_schema = Schema(query=Query).graphql_schema

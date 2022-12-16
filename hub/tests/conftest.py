@@ -2,6 +2,7 @@ from collections import defaultdict
 from logging import DEBUG, basicConfig, getLogger
 import os
 from pathlib import Path
+import pytest_asyncio
 from pytest import fixture, skip
 
 
@@ -34,7 +35,7 @@ def db_uri():
     return os.environ.get('TEST_MONGO_URI') or default_db_uri
 
 
-@fixture
+@pytest_asyncio.fixture
 async def db_client(db_uri):
     from motor.motor_asyncio import AsyncIOMotorClient
     if db_uri == 'NONE':
@@ -43,7 +44,7 @@ async def db_client(db_uri):
     return AsyncIOMotorClient(db_uri, **mc_kwargs)
 
 
-@fixture
+@pytest_asyncio.fixture
 async def db(db_client, db_uri):
     from overwatch_hub.util import get_mongo_db_name
     db_name = get_mongo_db_name(db_uri)
@@ -51,7 +52,7 @@ async def db(db_client, db_uri):
     return db_client[db_name]
 
 
-@fixture
+@pytest_asyncio.fixture
 async def model(db):
     from overwatch_hub.model import Model
     async with Model(db=db, create_optional_indexes=False) as model:
@@ -61,8 +62,6 @@ async def model(db):
 @fixture
 def graphql(model):
     from graphql import graphql
-    from graphql.execution.base import ExecutionResult
-    from graphql.execution.executors.asyncio import AsyncioExecutor as GQLAIOExecutor
     from overwatch_hub.graphql import graphql_schema
 
     async def run_graphql_query(query):
@@ -73,12 +72,7 @@ def graphql(model):
         res = await graphql(
             graphql_schema,
             query,
-            context=context,
-            return_promise=True,
-            enable_async=True,
-            executor=GQLAIOExecutor())
-        assert isinstance(res, ExecutionResult)
-        assert not res.invalid, repr(res.to_dict())
+            context_value=context)
         assert not res.errors
         return _ordered_dict_to_dict(res.data)
 
