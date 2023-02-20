@@ -16,7 +16,6 @@ from .helpers import setup_logging, setup_log_file
 
 logger = logging.getLogger(__name__)
 
-default_sleep_interval = 15
 default_report_timeout = 10
 
 rs = requests.session()
@@ -39,14 +38,12 @@ def system_agent_main():
 
 
 def run_system_agent(conf):
-    #sleep_interval = conf.sleep_interval or default_sleep_interval
-    sleep_interval = 15
     while True:
-        run_system_agent_iteration(conf, sleep_interval)
-        sleep(sleep_interval)
+        run_system_agent_iteration(conf)
+        sleep(conf.sleep_interval)
 
 
-def run_system_agent_iteration(conf, sleep_interval):
+def run_system_agent_iteration(conf):
     report_date = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
     t0 = monotime()
     report_state = gather_state(conf)
@@ -55,13 +52,13 @@ def run_system_agent_iteration(conf, sleep_interval):
         '__value': duration,
         '__unit': 'seconds',
     }
+    if duration > 1:
+        logger.debug('gather_state() took %.3f s', duration)
 
     # add watchdog
-    #wd_interval = conf.watchdog_interval or sleep_interval + 30
-    wd_interval = sleep_interval + 30
     report_state['watchdog'] = {
         '__watchdog': {
-            'deadline': int((time() + wd_interval) * 1000),
+            'deadline': int((time() + conf.sleep_interval + 30) * 1000),
         },
     }
 
